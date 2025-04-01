@@ -39,12 +39,13 @@ import {
   Mail,
   Check,
   Loader2,
-  Shield
+  Shield,
+  CreditCard
 } from "lucide-react";
 import { Property, Booking } from "@/types";
 import { api } from "@/services/api";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -58,6 +59,11 @@ const bookingSchema = z.object({
   message: z.string().optional(),
 });
 
+const paymentSchema = z.object({
+  phone: z.string().min(10, "Please enter a valid phone number"),
+  amount: z.number().min(100, "Minimum amount is KSh 100"),
+});
+
 const PropertyDetails = () => {
   const { id } = useParams<{ id: string }>();
   const [property, setProperty] = useState<Property | null>(null);
@@ -67,6 +73,9 @@ const PropertyDetails = () => {
   const [bookingLoading, setBookingLoading] = useState(false);
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
   
   const { user } = useAuth();
   const { toast } = useToast();
@@ -80,6 +89,14 @@ const PropertyDetails = () => {
       email: user?.email || "",
       phone: user?.phone || "",
       message: "",
+    },
+  });
+
+  const paymentForm = useForm<z.infer<typeof paymentSchema>>({
+    resolver: zodResolver(paymentSchema),
+    defaultValues: {
+      phone: user?.phone || "",
+      amount: 1000,
     },
   });
 
@@ -165,6 +182,59 @@ const PropertyDetails = () => {
       });
     } finally {
       setBookingLoading(false);
+    }
+  };
+
+  const onSubmitPayment = async (values: z.infer<typeof paymentSchema>) => {
+    if (!property) return;
+    
+    setPaymentLoading(true);
+    
+    try {
+      // Simulate payment processing
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // In a real implementation, this would call an API to your payment gateway
+      const response = await api.initiatePayment(
+        values.phone,
+        values.amount,
+        `Viewing fee for ${property.title}`
+      );
+      
+      if (response.success) {
+        setPaymentSuccess(true);
+        
+        toast({
+          title: "Payment Initiated",
+          description: `An STK push has been sent to ${values.phone}. Please complete the payment on your phone.`,
+        });
+        
+        // Simulate successful payment after 5 seconds
+        setTimeout(() => {
+          toast({
+            title: "Payment Successful",
+            description: "Your payment has been received. You can now view the property details.",
+            variant: "default",
+          });
+          
+          // Close dialog after success
+          setTimeout(() => {
+            setPaymentDialogOpen(false);
+            setPaymentSuccess(false);
+          }, 1000);
+        }, 5000);
+      } else {
+        throw new Error("Payment initialization failed");
+      }
+    } catch (err) {
+      console.error("Error processing payment:", err);
+      toast({
+        title: "Payment Failed",
+        description: "There was a problem processing your payment. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setPaymentLoading(false);
     }
   };
 
@@ -320,10 +390,10 @@ const PropertyDetails = () => {
                   </div>
                 </div>
               </CardContent>
-              <CardFooter>
+              <CardFooter className="flex flex-col space-y-3">
                 <Dialog open={bookingDialogOpen} onOpenChange={setBookingDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button className="w-full">Book a Viewing</Button>
+                    <Button className="w-full mb-2">Book a Viewing</Button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
@@ -446,6 +516,99 @@ const PropertyDetails = () => {
                               </>
                             ) : (
                               "Submit Viewing Request"
+                            )}
+                          </Button>
+                        </form>
+                      </Form>
+                    )}
+                  </DialogContent>
+                </Dialog>
+
+                {/* Pay to View Property Dialog */}
+                <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="w-full bg-green-600 hover:bg-green-700">
+                      <CreditCard className="h-4 w-4 mr-2" />
+                      Pay to View Live
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>Pay to View Property Live</DialogTitle>
+                    </DialogHeader>
+                    
+                    {paymentSuccess ? (
+                      <div className="py-6 text-center">
+                        <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                          <Check className="h-6 w-6 text-green-600" />
+                        </div>
+                        <h3 className="text-lg font-medium text-gray-900 mb-1">Payment Successful!</h3>
+                        <p className="text-gray-500 mb-4">
+                          Congratulations! You can now view the property live.
+                        </p>
+                        <Button className="mt-2" onClick={() => setPaymentDialogOpen(false)}>
+                          View Property Now
+                        </Button>
+                      </div>
+                    ) : (
+                      <Form {...paymentForm}>
+                        <form onSubmit={paymentForm.handleSubmit(onSubmitPayment)} className="space-y-4">
+                          <p className="text-sm text-gray-600 mb-4">
+                            Pay a small fee to get live access to view this property remotely without traveling to the location.
+                          </p>
+                          
+                          <FormField
+                            control={paymentForm.control}
+                            name="amount"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Amount (KSh)</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    type="number" 
+                                    value={field.value}
+                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                    disabled
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={paymentForm.control}
+                            name="phone"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>M-Pesa Number</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    {...field} 
+                                    placeholder="07XXXXXXXX"
+                                    className="font-medium"
+                                  />
+                                </FormControl>
+                                <p className="text-sm text-gray-500 mt-1">
+                                  Payment will be sent to 0710464858
+                                </p>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <div className="text-sm text-gray-500 my-2">
+                            <p>You will receive an STK push to complete the payment on your phone.</p>
+                          </div>
+                          
+                          <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" disabled={paymentLoading}>
+                            {paymentLoading ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Processing Payment...
+                              </>
+                            ) : (
+                              "Pay Now"
                             )}
                           </Button>
                         </form>
