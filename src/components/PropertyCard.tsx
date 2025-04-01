@@ -2,7 +2,7 @@
 import { Property } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { MapPin, Bed, Bath, Home, Calendar, CreditCard } from "lucide-react";
+import { MapPin, Bed, Bath, Home, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
@@ -66,15 +66,9 @@ export function PropertyCard({ property }: PropertyCardProps) {
         </div>
       </CardContent>
       
-      <CardFooter className="border-t pt-4 flex flex-col gap-2">
+      <CardFooter className="border-t pt-4">
         <Link to={`/properties/${property.id}`} className="w-full">
           <Button variant="default" className="w-full bg-brand-500 hover:bg-brand-600">View Details</Button>
-        </Link>
-        <Link to={`/properties/${property.id}`} className="w-full">
-          <Button variant="outline" className="w-full flex items-center">
-            <CreditCard className="h-4 w-4 mr-2" />
-            Pay to View Live
-          </Button>
         </Link>
       </CardFooter>
     </Card>

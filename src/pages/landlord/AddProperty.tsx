@@ -42,9 +42,19 @@ import {
   Home, 
   Upload, 
   Check,
-  AlertCircle
+  AlertCircle,
+  Image,
+  X
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 // Define form schema
 const propertySchema = z.object({
@@ -58,7 +68,7 @@ const propertySchema = z.object({
   city: z.string().min(2, "City is required"),
   country: z.string().default("Kenya"),
   features: z.array(z.string()).optional(),
-  images: z.array(z.string()).optional(),
+  images: z.array(z.string()).min(1, "At least one image is required"),
 });
 
 const AddProperty = () => {
@@ -68,8 +78,12 @@ const AddProperty = () => {
   
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showPaymentPrompt, setShowPaymentPrompt] = useState(false);
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [propertyId, setPropertyId] = useState<string | null>(null);
+  const [uploadedImages, setUploadedImages] = useState<string[]>(["https://images.unsplash.com/photo-1568605114967-8130f3a36994"]);
+  const [phoneNumber, setPhoneNumber] = useState(user?.phone || "");
+  const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
   
   // Form setup
   const form = useForm<z.infer<typeof propertySchema>>({
@@ -103,6 +117,23 @@ const AddProperty = () => {
     "Swimming Pool",
   ];
   
+  // Handle file upload - simulated for demo
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const newImages = Array.from(e.target.files).map(file => URL.createObjectURL(file));
+      const updatedImages = [...uploadedImages, ...newImages];
+      setUploadedImages(updatedImages);
+      form.setValue('images', updatedImages);
+    }
+  };
+  
+  const removeImage = (index: number) => {
+    const updatedImages = [...uploadedImages];
+    updatedImages.splice(index, 1);
+    setUploadedImages(updatedImages);
+    form.setValue('images', updatedImages);
+  };
+  
   // Handle form submission
   const onSubmit = async (values: z.infer<typeof propertySchema>) => {
     if (!user) return;
@@ -135,7 +166,7 @@ const AddProperty = () => {
         description: "Proceed to verify your listing with a payment.",
       });
       
-      setShowPaymentPrompt(true);
+      setShowPaymentDialog(true);
     } catch (error) {
       console.error("Error adding property:", error);
       toast({
@@ -150,20 +181,20 @@ const AddProperty = () => {
   
   // Handle property verification payment
   const handlePayment = async () => {
-    if (!user?.phone) {
+    if (!phoneNumber || phoneNumber.trim() === "") {
       toast({
         title: "Phone Number Required",
-        description: "Please update your profile with a phone number to proceed with payment.",
+        description: "Please enter a valid phone number to proceed with payment.",
         variant: "destructive",
       });
       return;
     }
     
-    setIsSubmitting(true);
+    setIsPaymentProcessing(true);
     
     try {
       const response = await api.initiatePayment(
-        user.phone,
+        phoneNumber,
         500, // KSh 500 verification fee
         "Property Listing Verification"
       );
@@ -171,17 +202,17 @@ const AddProperty = () => {
       if (response.success) {
         toast({
           title: "Payment Initiated",
-          description: response.message,
+          description: `STK Push sent to ${phoneNumber}. Please complete the payment on your phone.`,
         });
         
         // Simulate successful payment and verification
-        if (propertyId) {
-          await api.verifyProperty(propertyId);
-        }
-        
         setTimeout(() => {
-          navigate("/landlord/dashboard");
-        }, 2000);
+          if (propertyId) {
+            api.verifyProperty(propertyId);
+          }
+          setPaymentSuccess(true);
+          setIsPaymentProcessing(false);
+        }, 3000);
       }
     } catch (error) {
       console.error("Payment error:", error);
@@ -190,8 +221,7 @@ const AddProperty = () => {
         description: "There was an error processing your payment. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
+      setIsPaymentProcessing(false);
     }
   };
   
@@ -202,95 +232,6 @@ const AddProperty = () => {
   
   if (user.role !== UserRole.LANDLORD) {
     return <Navigate to="/" />;
-  }
-  
-  // If payment prompt is shown, display payment UI
-  if (showPaymentPrompt) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
-        
-        <div className="flex-1 flex items-center justify-center p-4">
-          <Card className="w-full max-w-md">
-            <CardHeader>
-              <CardTitle>Verify Your Listing</CardTitle>
-              <CardDescription>
-                To make your property visible to tenants, a verification fee of KSh 500 is required.
-              </CardDescription>
-            </CardHeader>
-            
-            <CardContent className="space-y-4">
-              <div className="bg-green-50 p-4 rounded-md flex items-start">
-                <Check className="h-5 w-5 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
-                <div>
-                  <p className="text-green-800 font-medium">Property Added Successfully</p>
-                  <p className="text-green-700 text-sm">
-                    Your property has been added to our database. Complete the verification to make it visible to tenants.
-                  </p>
-                </div>
-              </div>
-              
-              <div className="border rounded-md p-4">
-                <h3 className="font-medium mb-2">Payment Details</h3>
-                <dl className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <dt>Amount:</dt>
-                    <dd className="font-medium">KSh 500.00</dd>
-                  </div>
-                  <div className="flex justify-between">
-                    <dt>Payment Method:</dt>
-                    <dd>M-Pesa</dd>
-                  </div>
-                  <div className="flex justify-between">
-                    <dt>Phone Number:</dt>
-                    <dd>{user.phone || "Not provided"}</dd>
-                  </div>
-                </dl>
-              </div>
-              
-              {!user.phone && (
-                <div className="bg-amber-50 p-4 rounded-md flex items-start">
-                  <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5 mr-2 flex-shrink-0" />
-                  <div>
-                    <p className="text-amber-800 font-medium">Phone Number Required</p>
-                    <p className="text-amber-700 text-sm">
-                      Please update your profile with a phone number to proceed with M-Pesa payment.
-                    </p>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-            
-            <CardFooter className="flex flex-col space-y-2">
-              <Button 
-                className="w-full" 
-                onClick={handlePayment}
-                disabled={isSubmitting || !user.phone}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  "Pay with M-Pesa"
-                )}
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                className="w-full"
-                onClick={() => navigate("/landlord/dashboard")}
-              >
-                Skip for Now
-              </Button>
-            </CardFooter>
-          </Card>
-        </div>
-        
-        <Footer />
-      </div>
-    );
   }
   
   return (
@@ -325,13 +266,19 @@ const AddProperty = () => {
                 <div className={`w-8 h-8 mx-auto rounded-full flex items-center justify-center ${step >= 3 ? "bg-brand-500 text-white" : "bg-gray-200"}`}>
                   3
                 </div>
+                <span className="text-sm mt-1 block">Images</span>
+              </div>
+              <div className={`flex-1 text-center ${step >= 4 ? "text-brand-500" : "text-gray-400"}`}>
+                <div className={`w-8 h-8 mx-auto rounded-full flex items-center justify-center ${step >= 4 ? "bg-brand-500 text-white" : "bg-gray-200"}`}>
+                  4
+                </div>
                 <span className="text-sm mt-1 block">Review & Submit</span>
               </div>
             </div>
             <div className="relative h-2 bg-gray-200 mt-4 rounded-full overflow-hidden">
               <div 
                 className="absolute top-0 left-0 h-full bg-brand-500 transition-all duration-300"
-                style={{ width: `${((step - 1) / 2) * 100}%` }}
+                style={{ width: `${((step - 1) / 3) * 100}%` }}
               ></div>
             </div>
           </div>
@@ -562,20 +509,6 @@ const AddProperty = () => {
                         </div>
                       </div>
                       
-                      <div className="border border-dashed border-gray-300 rounded-md p-6 text-center">
-                        <Upload className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-                        <h3 className="text-sm font-medium">Property Images</h3>
-                        <p className="text-xs text-gray-500 mb-2">
-                          Drag & drop images or click to browse
-                        </p>
-                        <Button variant="outline" type="button" size="sm">
-                          Upload Images
-                        </Button>
-                        <p className="text-xs text-gray-500 mt-2">
-                          Temporarily using placeholder images for demo
-                        </p>
-                      </div>
-                      
                       <div className="flex justify-between">
                         <Button type="button" variant="outline" onClick={() => setStep(1)}>
                           Previous
@@ -587,8 +520,90 @@ const AddProperty = () => {
                     </div>
                   )}
                   
-                  {/* Step 3: Review and Submit */}
+                  {/* Step 3: Property Images */}
                   {step === 3 && (
+                    <div className="space-y-6">
+                      <div>
+                        <FormLabel className="block mb-3">Property Images</FormLabel>
+                        <div className="border border-dashed border-gray-300 rounded-md p-6 text-center">
+                          <Image className="h-8 w-8 mx-auto text-gray-400 mb-2" />
+                          <h3 className="text-sm font-medium">Upload Property Images</h3>
+                          <p className="text-xs text-gray-500 mb-2">
+                            Drag & drop images or click to browse
+                          </p>
+                          <FormField
+                            control={form.control}
+                            name="images"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <div>
+                                    <Input 
+                                      id="image-upload"
+                                      type="file" 
+                                      accept="image/*"
+                                      multiple
+                                      className="hidden"
+                                      onChange={handleImageUpload}
+                                    />
+                                    <Button 
+                                      variant="outline" 
+                                      type="button" 
+                                      size="sm"
+                                      onClick={() => document.getElementById('image-upload')?.click()}
+                                    >
+                                      Select Images
+                                    </Button>
+                                  </div>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <p className="text-xs text-gray-500 mt-2">
+                            Add high-quality images to make your listing stand out
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {/* Display uploaded images */}
+                      {uploadedImages.length > 0 && (
+                        <div>
+                          <h4 className="text-sm font-medium mb-2">Uploaded Images</h4>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            {uploadedImages.map((image, index) => (
+                              <div key={index} className="relative rounded-md overflow-hidden h-24 bg-gray-100">
+                                <img 
+                                  src={image} 
+                                  alt={`Property Image ${index + 1}`} 
+                                  className="h-full w-full object-cover"
+                                />
+                                <button
+                                  type="button"
+                                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                                  onClick={() => removeImage(index)}
+                                >
+                                  <X className="h-3 w-3" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="flex justify-between">
+                        <Button type="button" variant="outline" onClick={() => setStep(2)}>
+                          Previous
+                        </Button>
+                        <Button type="button" onClick={() => setStep(4)}>
+                          Next
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Step 4: Review and Submit */}
+                  {step === 4 && (
                     <div className="space-y-6">
                       <div>
                         <h3 className="text-lg font-semibold mb-4">Review Property Information</h3>
@@ -643,6 +658,21 @@ const AddProperty = () => {
                               )) || "None specified"}
                             </div>
                           </div>
+                          
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-500">Images</h4>
+                            <div className="flex flex-wrap gap-2 mt-1">
+                              {uploadedImages.map((image, index) => (
+                                <div key={index} className="w-16 h-16 rounded-md overflow-hidden">
+                                  <img 
+                                    src={image} 
+                                    alt={`Property Image ${index + 1}`} 
+                                    className="h-full w-full object-cover"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                         </div>
                       </div>
                       
@@ -662,7 +692,7 @@ const AddProperty = () => {
                       </div>
                       
                       <div className="flex justify-between">
-                        <Button type="button" variant="outline" onClick={() => setStep(2)}>
+                        <Button type="button" variant="outline" onClick={() => setStep(3)}>
                           Previous
                         </Button>
                         <Button type="submit" disabled={isSubmitting}>
@@ -684,6 +714,114 @@ const AddProperty = () => {
           </Card>
         </div>
       </div>
+      
+      {/* Payment Dialog */}
+      <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{paymentSuccess ? "Payment Successful!" : "Verify Your Listing"}</DialogTitle>
+            <DialogDescription>
+              {paymentSuccess 
+                ? "Your property has been verified and is now visible to potential tenants." 
+                : "To make your property visible to tenants, a verification fee of KSh 500 is required."}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {paymentSuccess ? (
+            <div className="space-y-4">
+              <div className="bg-green-50 p-4 rounded-md flex items-start">
+                <Check className="h-5 w-5 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
+                <div>
+                  <p className="text-green-800 font-medium">Property Verified Successfully</p>
+                  <p className="text-green-700 text-sm">
+                    Your property listing is now live and visible to potential tenants.
+                  </p>
+                </div>
+              </div>
+              
+              <DialogFooter>
+                <Button 
+                  className="w-full" 
+                  onClick={() => {
+                    setShowPaymentDialog(false);
+                    navigate("/landlord/dashboard");
+                  }}
+                >
+                  Go to Dashboard
+                </Button>
+              </DialogFooter>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="bg-green-50 p-4 rounded-md flex items-start">
+                <Check className="h-5 w-5 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
+                <div>
+                  <p className="text-green-800 font-medium">Property Added Successfully</p>
+                  <p className="text-green-700 text-sm">
+                    Your property has been added to our database. Complete the verification to make it visible to tenants.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="border rounded-md p-4">
+                <h3 className="font-medium mb-2">Payment Details</h3>
+                <dl className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <dt>Amount:</dt>
+                    <dd className="font-medium">KSh 500.00</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt>Payment Method:</dt>
+                    <dd>M-Pesa</dd>
+                  </div>
+                </dl>
+              </div>
+              
+              <div className="space-y-2">
+                <FormLabel>Enter M-Pesa Phone Number</FormLabel>
+                <Input 
+                  type="tel" 
+                  placeholder="07XXXXXXXX" 
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                />
+                <p className="text-xs text-gray-500">
+                  You will receive an STK push to this number
+                </p>
+              </div>
+              
+              <DialogFooter className="flex-col sm:flex-col gap-2">
+                <Button 
+                  className="w-full" 
+                  onClick={handlePayment}
+                  disabled={isPaymentProcessing || !phoneNumber}
+                >
+                  {isPaymentProcessing ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    "Pay KSh 500 with M-Pesa"
+                  )}
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => {
+                    setShowPaymentDialog(false);
+                    navigate("/landlord/dashboard");
+                  }}
+                  disabled={isPaymentProcessing}
+                >
+                  Skip for Now
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
       
       <Footer />
     </div>
