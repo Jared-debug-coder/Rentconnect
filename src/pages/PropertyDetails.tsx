@@ -35,10 +35,11 @@ import {
   Bath, 
   Home, 
   Calendar, 
-  Phone, 
+  MessageSquare, 
   Mail,
   Check,
-  Loader2
+  Loader2,
+  Shield
 } from "lucide-react";
 import { Property, Booking } from "@/types";
 import { api } from "@/services/api";
@@ -64,6 +65,7 @@ const PropertyDetails = () => {
   const [error, setError] = useState<string | null>(null);
   const [bookingLoading, setBookingLoading] = useState(false);
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
+  const [bookingSuccess, setBookingSuccess] = useState(false);
   
   const { user } = useAuth();
   const { toast } = useToast();
@@ -129,12 +131,21 @@ const PropertyDetails = () => {
       
       await api.createBooking(bookingData);
       
+      setBookingSuccess(true);
+      
       toast({
-        title: "Booking Successful",
-        description: "Your viewing request has been sent to the landlord.",
+        title: "Booking Request Submitted",
+        description: "Your viewing request has been sent. The property manager will contact you shortly.",
       });
       
-      setBookingDialogOpen(false);
+      // Reset form after successful submission
+      form.reset();
+      
+      // Close dialog after a brief delay to show success message
+      setTimeout(() => {
+        setBookingDialogOpen(false);
+        setBookingSuccess(false);
+      }, 2000);
     } catch (err) {
       console.error("Error creating booking:", err);
       toast({
@@ -280,21 +291,22 @@ const PropertyDetails = () => {
             {/* Landlord Info */}
             <Card className="mb-6">
               <CardHeader>
-                <CardTitle>Landlord Information</CardTitle>
-                <CardDescription>Contact the property owner</CardDescription>
+                <CardTitle>Contact Property Manager</CardTitle>
+                <CardDescription>Schedule a viewing of this property</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div>
-                    <h3 className="font-medium">{property.landlordName}</h3>
+                  <div className="flex items-center">
+                    <Shield className="h-4 w-4 text-green-500 mr-2" />
+                    <span className="text-sm">Trusted Property Manager</span>
                   </div>
                   <div className="flex items-center">
-                    <Phone className="h-4 w-4 text-gray-500 mr-2" />
-                    <span>{property.landlordPhone}</span>
+                    <MessageSquare className="h-4 w-4 text-gray-500 mr-2" />
+                    <span className="text-sm">Quick response time</span>
                   </div>
                   <div className="flex items-center">
                     <Mail className="h-4 w-4 text-gray-500 mr-2" />
-                    <span>Contact via email</span>
+                    <span className="text-sm">Contact via our secure platform</span>
                   </div>
                 </div>
               </CardContent>
@@ -305,113 +317,130 @@ const PropertyDetails = () => {
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                      <DialogTitle>Book a Property Viewing</DialogTitle>
+                      <DialogTitle>Schedule a Property Viewing</DialogTitle>
                     </DialogHeader>
-                    <Form {...form}>
-                      <form onSubmit={form.handleSubmit(onSubmitBooking)} className="space-y-4">
-                        <FormField
-                          control={form.control}
-                          name="date"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Date</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  type="date" 
-                                  min={today}
-                                  {...field} 
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="time"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Time</FormLabel>
-                              <FormControl>
-                                <Input type="time" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="name"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Full Name</FormLabel>
-                              <FormControl>
-                                <Input {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="email"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Email</FormLabel>
-                              <FormControl>
-                                <Input type="email" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="phone"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Phone</FormLabel>
-                              <FormControl>
-                                <Input {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="message"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Message (Optional)</FormLabel>
-                              <FormControl>
-                                <Textarea 
-                                  placeholder="Any special requests or questions?"
-                                  {...field} 
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <Button type="submit" className="w-full" disabled={bookingLoading}>
-                          {bookingLoading ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Submitting...
-                            </>
-                          ) : (
-                            "Submit Booking Request"
-                          )}
-                        </Button>
-                      </form>
-                    </Form>
+                    
+                    {bookingSuccess ? (
+                      <div className="py-6 text-center">
+                        <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                          <Check className="h-6 w-6 text-green-600" />
+                        </div>
+                        <h3 className="text-lg font-medium text-gray-900 mb-1">Request Submitted!</h3>
+                        <p className="text-gray-500 mb-4">
+                          The property manager will contact you shortly.
+                        </p>
+                      </div>
+                    ) : (
+                      <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmitBooking)} className="space-y-4">
+                          <FormField
+                            control={form.control}
+                            name="date"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Preferred Viewing Date</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    type="date" 
+                                    min={today}
+                                    {...field} 
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="time"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Preferred Time</FormLabel>
+                                <FormControl>
+                                  <Input type="time" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="name"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Full Name</FormLabel>
+                                <FormControl>
+                                  <Input {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Email Address</FormLabel>
+                                <FormControl>
+                                  <Input type="email" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="phone"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Phone Number</FormLabel>
+                                <FormControl>
+                                  <Input {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="message"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Message (Optional)</FormLabel>
+                                <FormControl>
+                                  <Textarea 
+                                    placeholder="Any questions about the property?"
+                                    {...field} 
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <div className="text-sm text-gray-500 my-2">
+                            <p>Contact information will only be shared with the property manager after you submit your request.</p>
+                          </div>
+                          
+                          <Button type="submit" className="w-full" disabled={bookingLoading}>
+                            {bookingLoading ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Processing...
+                              </>
+                            ) : (
+                              "Submit Viewing Request"
+                            )}
+                          </Button>
+                        </form>
+                      </Form>
+                    )}
                   </DialogContent>
                 </Dialog>
               </CardFooter>
@@ -423,9 +452,31 @@ const PropertyDetails = () => {
                 <CardTitle>Similar Properties</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-600">
-                  More properties like this will appear here.
-                </p>
+                <div className="space-y-4">
+                  {properties.filter(p => p.id !== property.id && p.type === property.type).slice(0, 3).map(similarProperty => (
+                    <Link to={`/properties/${similarProperty.id}`} key={similarProperty.id} className="block">
+                      <div className="flex gap-3 hover:bg-gray-50 p-2 rounded-lg transition-colors">
+                        <div className="w-16 h-16 bg-gray-200 rounded-md flex-shrink-0 overflow-hidden">
+                          <img 
+                            src={similarProperty.images[0] || "https://images.unsplash.com/photo-1568605114967-8130f3a36994"} 
+                            alt={similarProperty.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div>
+                          <h3 className="font-medium text-sm line-clamp-1">{similarProperty.title}</h3>
+                          <p className="text-sm text-gray-500">KSh {similarProperty.price.toLocaleString()}/month</p>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                  
+                  {properties.filter(p => p.id !== property.id && p.type === property.type).length === 0 && (
+                    <p className="text-sm text-gray-600">
+                      More similar properties will be listed here soon.
+                    </p>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </div>
