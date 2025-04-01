@@ -61,6 +61,7 @@ const bookingSchema = z.object({
 const PropertyDetails = () => {
   const { id } = useParams<{ id: string }>();
   const [property, setProperty] = useState<Property | null>(null);
+  const [similarProperties, setSimilarProperties] = useState<Property[]>([]); 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [bookingLoading, setBookingLoading] = useState(false);
@@ -90,6 +91,15 @@ const PropertyDetails = () => {
       try {
         const data = await api.getPropertyById(id);
         setProperty(data);
+        
+        // Fetch similar properties
+        if (data) {
+          const allProperties = await api.getProperties();
+          const similar = allProperties.filter(p => 
+            p.id !== data.id && p.type === data.type
+          ).slice(0, 3);
+          setSimilarProperties(similar);
+        }
       } catch (err) {
         console.error("Error fetching property:", err);
         setError("Failed to load property details. Please try again later.");
@@ -446,14 +456,14 @@ const PropertyDetails = () => {
               </CardFooter>
             </Card>
             
-            {/* Similar Properties would go here in a real implementation */}
+            {/* Similar Properties */}
             <Card>
               <CardHeader>
                 <CardTitle>Similar Properties</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {properties.filter(p => p.id !== property.id && p.type === property.type).slice(0, 3).map(similarProperty => (
+                  {similarProperties.map(similarProperty => (
                     <Link to={`/properties/${similarProperty.id}`} key={similarProperty.id} className="block">
                       <div className="flex gap-3 hover:bg-gray-50 p-2 rounded-lg transition-colors">
                         <div className="w-16 h-16 bg-gray-200 rounded-md flex-shrink-0 overflow-hidden">
@@ -471,7 +481,7 @@ const PropertyDetails = () => {
                     </Link>
                   ))}
                   
-                  {properties.filter(p => p.id !== property.id && p.type === property.type).length === 0 && (
+                  {similarProperties.length === 0 && (
                     <p className="text-sm text-gray-600">
                       More similar properties will be listed here soon.
                     </p>
