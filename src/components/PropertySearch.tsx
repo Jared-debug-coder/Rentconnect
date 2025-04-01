@@ -103,7 +103,7 @@ export function PropertySearch() {
             <SelectValue placeholder="Property Type" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Types</SelectItem>
+            <SelectItem value="all-types">All Types</SelectItem>
             {Object.values(PropertyType).map((type) => (
               <SelectItem key={type} value={type}>
                 {type.charAt(0).toUpperCase() + type.slice(1)}

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -42,7 +41,6 @@ const Properties = () => {
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
-  // Update active filters display
   useEffect(() => {
     const newActiveFilters: string[] = [];
     
@@ -76,14 +74,14 @@ const Properties = () => {
   const handleTypeChange = (value: string) => {
     setFilters(prev => ({
       ...prev,
-      type: value ? value as PropertyType : null
+      type: value === "all-types" ? null : value as PropertyType
     }));
   };
 
   const handleLocationChange = (value: string) => {
     setFilters(prev => ({
       ...prev,
-      city: value
+      city: value === "all-locations" ? "" : value
     }));
   };
 
@@ -120,7 +118,6 @@ const Properties = () => {
       </div>
       
       <div className="container px-4 py-8">
-        {/* Mobile filters toggle */}
         <div className="md:hidden mb-4">
           <Button 
             onClick={() => setShowMobileFilters(!showMobileFilters)}
@@ -131,7 +128,6 @@ const Properties = () => {
           </Button>
         </div>
         
-        {/* Active filters */}
         {activeFilters.length > 0 && (
           <div className="mb-6">
             <div className="flex items-center mb-2">
@@ -163,7 +159,6 @@ const Properties = () => {
         )}
         
         <div className="flex flex-col md:flex-row gap-6">
-          {/* Filters sidebar */}
           <div className={`md:w-1/4 ${showMobileFilters ? 'block' : 'hidden'} md:block`}>
             <div className="bg-white rounded-lg shadow p-4">
               <h2 className="text-lg font-semibold mb-4">Refine Search</h2>
@@ -173,14 +168,14 @@ const Properties = () => {
                   <AccordionTrigger className="text-sm font-medium">Location</AccordionTrigger>
                   <AccordionContent>
                     <Select 
-                      value={filters.city || ""}
+                      value={filters.city || "all-locations"}
                       onValueChange={handleLocationChange}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select location" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All Locations</SelectItem>
+                        <SelectItem value="all-locations">All Locations</SelectItem>
                         <SelectItem value="Nairobi">Nairobi</SelectItem>
                         <SelectItem value="Mombasa">Mombasa</SelectItem>
                         <SelectItem value="Kisumu">Kisumu</SelectItem>
@@ -194,14 +189,14 @@ const Properties = () => {
                   <AccordionTrigger className="text-sm font-medium">Property Type</AccordionTrigger>
                   <AccordionContent>
                     <Select
-                      value={filters.type || ""}
+                      value={filters.type || "all-types"}
                       onValueChange={handleTypeChange}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select type" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All Types</SelectItem>
+                        <SelectItem value="all-types">All Types</SelectItem>
                         {Object.values(PropertyType).map((type) => (
                           <SelectItem key={type} value={type}>
                             {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -242,7 +237,6 @@ const Properties = () => {
             </div>
           </div>
           
-          {/* Properties list */}
           <div className="md:w-3/4">
             <h2 className="text-xl font-semibold mb-6">Available Properties</h2>
             <PropertyList filters={filters} />
