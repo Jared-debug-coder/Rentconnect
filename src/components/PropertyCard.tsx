@@ -20,18 +20,18 @@ export function PropertyCard({ property }: PropertyCardProps) {
   };
 
   return (
-    <Card className="property-card h-full flex flex-col">
-      <div className="relative h-48 overflow-hidden">
+    <Card className="property-card h-full flex flex-col hover:shadow-lg transition-all duration-300">
+      <div className="relative h-60 overflow-hidden rounded-t-lg">
         <img
           src={property.images[0] || "https://images.unsplash.com/photo-1568605114967-8130f3a36994"}
           alt={property.title}
           className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
         />
-        <Badge className="absolute top-2 right-2 bg-brand-500">
+        <Badge className="absolute top-2 right-2 bg-brand-500 font-medium text-white">
           KSH {property.price.toLocaleString()}/month
         </Badge>
         {property.isVerified && (
-          <Badge className="absolute top-2 left-2 bg-green-500">
+          <Badge className="absolute top-2 left-2 bg-green-500 font-medium text-white">
             Verified
           </Badge>
         )}
@@ -40,35 +40,35 @@ export function PropertyCard({ property }: PropertyCardProps) {
       <CardContent className="flex-grow pt-4">
         <h3 className="text-lg font-semibold mb-2 truncate">{property.title}</h3>
         
-        <div className="flex items-center text-sm text-gray-500 mb-3">
-          <MapPin className="h-4 w-4 mr-1" />
+        <div className="flex items-center text-sm text-gray-600 mb-3">
+          <MapPin className="h-4 w-4 mr-1 flex-shrink-0" />
           <span className="truncate">{property.address}, {property.city}</span>
         </div>
         
         <div className="grid grid-cols-3 gap-2 mb-3">
           <div className="flex items-center text-sm">
-            <Home className="h-4 w-4 mr-1 text-gray-500" />
-            <span>{property.type}</span>
+            <Home className="h-4 w-4 mr-1 text-gray-500 flex-shrink-0" />
+            <span className="truncate">{property.type}</span>
           </div>
           <div className="flex items-center text-sm">
-            <Bed className="h-4 w-4 mr-1 text-gray-500" />
+            <Bed className="h-4 w-4 mr-1 text-gray-500 flex-shrink-0" />
             <span>{property.bedrooms} {property.bedrooms === 1 ? 'bed' : 'beds'}</span>
           </div>
           <div className="flex items-center text-sm">
-            <Bath className="h-4 w-4 mr-1 text-gray-500" />
+            <Bath className="h-4 w-4 mr-1 text-gray-500 flex-shrink-0" />
             <span>{property.bathrooms} {property.bathrooms === 1 ? 'bath' : 'baths'}</span>
           </div>
         </div>
         
         <div className="flex items-center text-xs text-gray-500 mt-2">
-          <Calendar className="h-3 w-3 mr-1" />
+          <Calendar className="h-3 w-3 mr-1 flex-shrink-0" />
           <span>Listed on {formatDate(property.createdAt)}</span>
         </div>
       </CardContent>
       
       <CardFooter className="border-t pt-4">
         <Link to={`/properties/${property.id}`} className="w-full">
-          <Button variant="default" className="w-full">View Details</Button>
+          <Button variant="default" className="w-full bg-brand-500 hover:bg-brand-600">View Details</Button>
         </Link>
       </CardFooter>
     </Card>
