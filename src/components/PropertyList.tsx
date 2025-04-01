@@ -1,17 +1,12 @@
 
 import { useState, useEffect } from "react";
-import { Property, PropertyType } from "@/types";
+import { Property, PropertyType, PropertyFilters } from "@/types";
 import { PropertyCard } from "@/components/PropertyCard";
 import { api } from "@/services/api";
 import { Loader2 } from "lucide-react";
 
 interface PropertyListProps {
-  filters?: {
-    type?: PropertyType;
-    minPrice?: number;
-    maxPrice?: number;
-    city?: string;
-  };
+  filters?: PropertyFilters;
 }
 
 export function PropertyList({ filters }: PropertyListProps) {

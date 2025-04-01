@@ -45,6 +45,13 @@ export interface Property {
   updatedAt: Date;
 }
 
+export interface PropertyFilters {
+  type?: PropertyType | null;
+  minPrice?: number | null;
+  maxPrice?: number | null;
+  city?: string | null;
+}
+
 export interface Booking {
   id: string;
   propertyId: string;

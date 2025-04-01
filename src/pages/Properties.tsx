@@ -4,7 +4,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { PropertySearch } from "@/components/PropertySearch";
 import { PropertyList } from "@/components/PropertyList";
-import { PropertyType } from "@/types";
+import { PropertyType, PropertyFilters } from "@/types";
 import { useLocation as useRouterLocation } from "react-router-dom";
 import { 
   Accordion,
@@ -27,9 +27,9 @@ const Properties = () => {
   const location = useRouterLocation();
   const queryParams = new URLSearchParams(location.search);
   
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<PropertyFilters>({
     city: queryParams.get("location") || "",
-    type: (queryParams.get("type") as PropertyType) || "",
+    type: queryParams.get("type") as PropertyType | null,
     minPrice: queryParams.get("minPrice") ? parseInt(queryParams.get("minPrice") as string) : 0,
     maxPrice: queryParams.get("maxPrice") ? parseInt(queryParams.get("maxPrice") as string) : 50000,
   });
@@ -54,8 +54,8 @@ const Properties = () => {
       newActiveFilters.push(`Type: ${filters.type}`);
     }
     
-    if (filters.minPrice > 0 || filters.maxPrice < 50000) {
-      newActiveFilters.push(`Price: KSh ${filters.minPrice.toLocaleString()} - KSh ${filters.maxPrice.toLocaleString()}`);
+    if (filters.minPrice && filters.minPrice > 0 || filters.maxPrice && filters.maxPrice < 50000) {
+      newActiveFilters.push(`Price: KSh ${filters.minPrice?.toLocaleString() || 0} - KSh ${filters.maxPrice?.toLocaleString() || 50000}`);
     }
     
     setActiveFilters(newActiveFilters);
@@ -76,7 +76,7 @@ const Properties = () => {
   const handleTypeChange = (value: string) => {
     setFilters(prev => ({
       ...prev,
-      type: value as PropertyType
+      type: value ? value as PropertyType : null
     }));
   };
 
@@ -90,7 +90,7 @@ const Properties = () => {
   const clearAllFilters = () => {
     setFilters({
       city: "",
-      type: "",
+      type: null,
       minPrice: 0,
       maxPrice: 50000
     });
@@ -101,7 +101,7 @@ const Properties = () => {
     if (filter.startsWith("Location:")) {
       setFilters(prev => ({ ...prev, city: "" }));
     } else if (filter.startsWith("Type:")) {
-      setFilters(prev => ({ ...prev, type: "" }));
+      setFilters(prev => ({ ...prev, type: null }));
     } else if (filter.startsWith("Price:")) {
       setFilters(prev => ({ ...prev, minPrice: 0, maxPrice: 50000 }));
       setPriceRange([0, 50000]);
@@ -173,7 +173,7 @@ const Properties = () => {
                   <AccordionTrigger className="text-sm font-medium">Location</AccordionTrigger>
                   <AccordionContent>
                     <Select 
-                      value={filters.city}
+                      value={filters.city || ""}
                       onValueChange={handleLocationChange}
                     >
                       <SelectTrigger>
@@ -194,7 +194,7 @@ const Properties = () => {
                   <AccordionTrigger className="text-sm font-medium">Property Type</AccordionTrigger>
                   <AccordionContent>
                     <Select
-                      value={filters.type}
+                      value={filters.type || ""}
                       onValueChange={handleTypeChange}
                     >
                       <SelectTrigger>

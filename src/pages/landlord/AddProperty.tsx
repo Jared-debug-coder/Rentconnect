@@ -110,9 +110,19 @@ const AddProperty = () => {
     setIsSubmitting(true);
     
     try {
-      // Add property to the database
+      // Add property to the database - ensure all required properties are provided
       const property = await api.addProperty({
-        ...values,
+        title: values.title,
+        description: values.description,
+        type: values.type,
+        price: values.price,
+        bedrooms: values.bedrooms,
+        bathrooms: values.bathrooms,
+        address: values.address,
+        city: values.city,
+        country: values.country,
+        features: values.features || [],
+        images: values.images || [],
         landlordId: user.id,
         landlordName: user.name,
         landlordPhone: user.phone || "",
