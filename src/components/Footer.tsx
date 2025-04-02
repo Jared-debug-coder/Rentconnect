@@ -69,34 +69,52 @@ export function Footer() {
             <h3 className="text-lg font-medium mb-4">Resources</h3>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <a href="/resources/rental-guides" className="text-gray-400 hover:text-white transition-colors">
                   Rental Guides
                 </a>
+                <p className="text-xs text-gray-500 mt-1">
+                  Comprehensive guides to help you navigate the rental process in Kenya.
+                </p>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <a href="/resources/market-reports" className="text-gray-400 hover:text-white transition-colors">
                   Property Market Reports
                 </a>
+                <p className="text-xs text-gray-500 mt-1">
+                  Quarterly analysis of property trends and pricing across major Kenyan cities.
+                </p>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <a href="/resources/tenant-rights" className="text-gray-400 hover:text-white transition-colors">
                   Tenant Rights
                 </a>
+                <p className="text-xs text-gray-500 mt-1">
+                  Learn about your legal rights and protections as a tenant in Kenya.
+                </p>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <a href="/resources/landlord-tips" className="text-gray-400 hover:text-white transition-colors">
                   Landlord Tips
                 </a>
+                <p className="text-xs text-gray-500 mt-1">
+                  Best practices for property management and tenant relations.
+                </p>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <a href="/legal/privacy" className="text-gray-400 hover:text-white transition-colors">
                   Privacy Policy
                 </a>
+                <p className="text-xs text-gray-500 mt-1">
+                  How we protect and handle your personal information.
+                </p>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <a href="/legal/terms" className="text-gray-400 hover:text-white transition-colors">
                   Terms of Service
                 </a>
+                <p className="text-xs text-gray-500 mt-1">
+                  Rules and guidelines for using our platform.
+                </p>
               </li>
             </ul>
           </div>
@@ -111,7 +129,9 @@ export function Footer() {
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="h-5 w-5 text-gray-400" />
-                <span className="text-gray-400">+254 710 464 858</span>
+                <a href="tel:+254710464858" className="text-gray-400 hover:text-white transition-colors">
+                  +254 710 464 858
+                </a>
               </div>
               <div className="flex items-center space-x-3">
                 <Mail className="h-5 w-5 text-gray-400" />
@@ -122,6 +142,9 @@ export function Footer() {
               <div className="mt-4">
                 <p className="text-gray-400">
                   Office Hours: Mon-Fri, 8:00 AM - 5:00 PM
+                </p>
+                <p className="text-gray-400 mt-1">
+                  Weekend Support: Sat, 9:00 AM - 1:00 PM
                 </p>
               </div>
             </div>

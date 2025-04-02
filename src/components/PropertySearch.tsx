@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "@/contexts/LocationContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -65,11 +65,11 @@ export function PropertySearch() {
   };
 
   // Update search location when context location changes
-  useState(() => {
+  useEffect(() => {
     if (currentLocation && !searchParams.location) {
       setSearchParams(prev => ({ ...prev, location: currentLocation }));
     }
-  });
+  }, [currentLocation]); // Add dependency to ensure it runs when currentLocation changes
 
   return (
     <form onSubmit={handleSearch} className="bg-white p-4 rounded-lg shadow-lg">

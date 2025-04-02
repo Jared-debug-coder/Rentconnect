@@ -20,6 +20,9 @@ import AddProperty from "./pages/landlord/AddProperty";
 import TenantDashboard from "./pages/tenant/Dashboard";
 import NotFound from "./pages/NotFound";
 
+// Resource Pages
+import RentalGuides from "./pages/resources/RentalGuides";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -38,6 +41,9 @@ const App = () => (
               <Route path="/properties/:id" element={<PropertyDetails />} />
               <Route path="/how-it-works" element={<HowItWorks />} />
               <Route path="/contact" element={<Contact />} />
+              
+              {/* Resource Pages */}
+              <Route path="/resources/rental-guides" element={<RentalGuides />} />
               
               {/* Landlord routes */}
               <Route path="/landlord/dashboard" element={<LandlordDashboard />} />

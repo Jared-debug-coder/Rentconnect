@@ -42,7 +42,9 @@ import {
   MapPin,
   Bed,
   Bath,
-  Eye
+  Eye,
+  Phone,
+  Mail
 } from "lucide-react";
 
 const LandlordDashboard = () => {
@@ -408,7 +410,7 @@ const LandlordDashboard = () => {
                                     {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
                                   </Badge>
                                 </div>
-                                <div className="space-y-1 text-sm">
+                                <div className="space-y-2 text-sm">
                                   <div className="flex items-center">
                                     <Calendar className="h-4 w-4 mr-1 text-gray-500" />
                                     <span>
@@ -418,6 +420,18 @@ const LandlordDashboard = () => {
                                   <div className="flex items-center">
                                     <User className="h-4 w-4 mr-1 text-gray-500" />
                                     <span>{booking.tenantName}</span>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <Phone className="h-4 w-4 mr-1 text-green-500" />
+                                    <a href={`tel:${booking.tenantPhone}`} className="text-green-600 hover:underline">
+                                      {booking.tenantPhone}
+                                    </a>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <Mail className="h-4 w-4 mr-1 text-blue-500" />
+                                    <a href={`mailto:${booking.tenantEmail}`} className="text-blue-600 hover:underline">
+                                      {booking.tenantEmail}
+                                    </a>
                                   </div>
                                   {booking.message && (
                                     <p className="mt-2 text-gray-600 bg-gray-50 p-2 rounded italic">
