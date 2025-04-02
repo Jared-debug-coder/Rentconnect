@@ -1,5 +1,5 @@
 
-import { Home, Mail, Phone, MapPin, Facebook, Twitter, Instagram } from "lucide-react";
+import { Home, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export function Footer() {
@@ -14,17 +14,20 @@ export function Footer() {
               <span className="text-xl font-semibold">RentConnect</span>
             </div>
             <p className="text-gray-400 mb-4">
-              Connecting landlords and tenants for a seamless rental experience.
+              Connecting landlords and tenants for a seamless rental experience in Kenya. Find your perfect home or list your property today.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
                 <Facebook className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
                 <Twitter className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
                 <Instagram className="h-5 w-5" />
+              </a>
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+                <Linkedin className="h-5 w-5" />
               </a>
             </div>
           </div>
@@ -49,6 +52,11 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link to="/contact" className="text-gray-400 hover:text-white transition-colors">
+                  Contact Us
+                </Link>
+              </li>
+              <li>
                 <Link to="/register" className="text-gray-400 hover:text-white transition-colors">
                   Register
                 </Link>
@@ -61,24 +69,34 @@ export function Footer() {
             <h3 className="text-lg font-medium mb-4">Resources</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/privacy-policy" className="text-gray-400 hover:text-white transition-colors">
+                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                  Rental Guides
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                  Property Market Reports
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                  Tenant Rights
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                  Landlord Tips
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-gray-400 hover:text-white transition-colors">
                   Privacy Policy
-                </Link>
+                </a>
               </li>
               <li>
-                <Link to="/terms-of-service" className="text-gray-400 hover:text-white transition-colors">
+                <a href="#" className="text-gray-400 hover:text-white transition-colors">
                   Terms of Service
-                </Link>
-              </li>
-              <li>
-                <Link to="/faq" className="text-gray-400 hover:text-white transition-colors">
-                  FAQ
-                </Link>
-              </li>
-              <li>
-                <Link to="/blog" className="text-gray-400 hover:text-white transition-colors">
-                  Blog
-                </Link>
+                </a>
               </li>
             </ul>
           </div>
@@ -97,14 +115,21 @@ export function Footer() {
               </div>
               <div className="flex items-center space-x-3">
                 <Mail className="h-5 w-5 text-gray-400" />
-                <span className="text-gray-400">info@rentconnect.co.ke</span>
+                <a href="mailto:info@rentconnect.co.ke" className="text-gray-400 hover:text-white transition-colors">
+                  info@rentconnect.co.ke
+                </a>
+              </div>
+              <div className="mt-4">
+                <p className="text-gray-400">
+                  Office Hours: Mon-Fri, 8:00 AM - 5:00 PM
+                </p>
               </div>
             </div>
           </div>
         </div>
 
         <div className="border-t border-gray-800 mt-10 pt-6 text-center text-gray-500">
-          <p>&copy; {new Date().getFullYear()} RentConnect. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} RentConnect. All rights reserved. The premier property rental platform in Kenya.</p>
         </div>
       </div>
     </footer>

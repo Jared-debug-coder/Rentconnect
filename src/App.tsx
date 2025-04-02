@@ -14,6 +14,7 @@ import Register from "./pages/Register";
 import Properties from "./pages/Properties";
 import PropertyDetails from "./pages/PropertyDetails";
 import HowItWorks from "./pages/HowItWorks";
+import Contact from "./pages/Contact";
 import LandlordDashboard from "./pages/landlord/Dashboard";
 import AddProperty from "./pages/landlord/AddProperty";
 import TenantDashboard from "./pages/tenant/Dashboard";
@@ -36,6 +37,7 @@ const App = () => (
               <Route path="/properties" element={<Properties />} />
               <Route path="/properties/:id" element={<PropertyDetails />} />
               <Route path="/how-it-works" element={<HowItWorks />} />
+              <Route path="/contact" element={<Contact />} />
               
               {/* Landlord routes */}
               <Route path="/landlord/dashboard" element={<LandlordDashboard />} />
