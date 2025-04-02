@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
@@ -56,8 +55,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/components/ui/alert";
 
-// Define form schema
 const propertySchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters"),
   description: z.string().min(20, "Description must be at least 20 characters"),
@@ -70,6 +73,9 @@ const propertySchema = z.object({
   country: z.string().default("Kenya"),
   features: z.array(z.string()).optional(),
   images: z.array(z.string()).min(1, "At least one image is required"),
+  termsAccepted: z.boolean().refine(val => val === true, {
+    message: "You must accept the terms and conditions",
+  }),
 });
 
 const paymentSchema = z.object({
@@ -89,8 +95,8 @@ const AddProperty = () => {
   const [phoneNumber, setPhoneNumber] = useState(user?.phone || "");
   const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   
-  // Form setup
   const form = useForm<z.infer<typeof propertySchema>>({
     resolver: zodResolver(propertySchema),
     defaultValues: {
@@ -105,10 +111,10 @@ const AddProperty = () => {
       country: "Kenya",
       features: [],
       images: ["https://images.unsplash.com/photo-1568605114967-8130f3a36994"],
+      termsAccepted: false,
     },
   });
   
-  // Payment form setup
   const paymentForm = useForm<z.infer<typeof paymentSchema>>({
     resolver: zodResolver(paymentSchema),
     defaultValues: {
@@ -116,7 +122,6 @@ const AddProperty = () => {
     },
   });
   
-  // Available features for checkbox selection
   const availableFeatures = [
     "Parking",
     "Security",
@@ -130,7 +135,6 @@ const AddProperty = () => {
     "Swimming Pool",
   ];
   
-  // Handle file upload - simulated for demo
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const newImages = Array.from(e.target.files).map(file => URL.createObjectURL(file));
@@ -147,14 +151,21 @@ const AddProperty = () => {
     form.setValue('images', updatedImages);
   };
   
-  // Handle form submission
   const onSubmit = async (values: z.infer<typeof propertySchema>) => {
     if (!user) return;
+    
+    if (!values.termsAccepted) {
+      toast({
+        title: "Agreement Required",
+        description: "You must accept the terms and conditions to list your property.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     setIsSubmitting(true);
     
     try {
-      // Add property to the database - ensure all required properties are provided
       const property = await api.addProperty({
         title: values.title,
         description: values.description,
@@ -179,7 +190,6 @@ const AddProperty = () => {
         description: "Proceed to verify your listing with a payment.",
       });
       
-      // Show the payment dialog after successful property creation
       setShowPaymentDialog(true);
     } catch (error) {
       console.error("Error adding property:", error);
@@ -193,7 +203,6 @@ const AddProperty = () => {
     }
   };
   
-  // Handle property verification payment
   const handlePayment = async () => {
     if (!paymentForm.getValues().phone || paymentForm.getValues().phone.trim() === "") {
       toast({
@@ -207,10 +216,9 @@ const AddProperty = () => {
     setIsPaymentProcessing(true);
     
     try {
-      // Simulate sending M-Pesa STK Push
       const response = await api.initiatePayment(
         paymentForm.getValues().phone,
-        500, // KSh 500 verification fee
+        500,
         "Property Listing Verification"
       );
       
@@ -220,12 +228,12 @@ const AddProperty = () => {
           description: `STK Push sent to ${paymentForm.getValues().phone}. Please check your phone to complete the payment to 0710464858.`,
         });
         
-        // Simulate successful payment and verification
         setTimeout(() => {
           if (propertyId) {
             api.verifyProperty(propertyId);
           }
           setPaymentSuccess(true);
+          setShowSuccessMessage(true);
           setIsPaymentProcessing(false);
         }, 3000);
       }
@@ -240,7 +248,6 @@ const AddProperty = () => {
     }
   };
   
-  // Make sure the user is a landlord
   if (!user) {
     return <Navigate to="/login" />;
   }
@@ -262,7 +269,18 @@ const AddProperty = () => {
             </p>
           </div>
           
-          {/* Progress Indicator */}
+          {showSuccessMessage && (
+            <Alert className="mb-6 bg-green-50 border-green-200">
+              <Check className="h-5 w-5 text-green-500" />
+              <AlertTitle className="text-green-800">Property Listed Successfully!</AlertTitle>
+              <AlertDescription className="text-green-700">
+                Congratulations! Your property has been successfully verified and is now live on our platform. 
+                Tenants can now see your listing in the verified properties section. You can manage your 
+                property from your dashboard.
+              </AlertDescription>
+            </Alert>
+          )}
+          
           <div className="mb-8">
             <div className="flex justify-between">
               <div className={`flex-1 text-center ${step >= 1 ? "text-brand-500" : "text-gray-400"}`}>
@@ -287,7 +305,7 @@ const AddProperty = () => {
                 <div className={`w-8 h-8 mx-auto rounded-full flex items-center justify-center ${step >= 4 ? "bg-brand-500 text-white" : "bg-gray-200"}`}>
                   4
                 </div>
-                <span className="text-sm mt-1 block">Review & Submit</span>
+                <span className="text-sm mt-1 block">Review & Agreement</span>
               </div>
               <div className={`flex-1 text-center ${step >= 5 ? "text-brand-500" : "text-gray-400"}`}>
                 <div className={`w-8 h-8 mx-auto rounded-full flex items-center justify-center ${step >= 5 ? "bg-brand-500 text-white" : "bg-gray-200"}`}>
@@ -308,7 +326,6 @@ const AddProperty = () => {
             <CardContent className="pt-6">
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  {/* Step 1: Basic Information */}
                   {step === 1 && (
                     <div className="space-y-4">
                       <FormField
@@ -408,7 +425,6 @@ const AddProperty = () => {
                     </div>
                   )}
                   
-                  {/* Step 2: Property Details */}
                   {step === 2 && (
                     <div className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -541,7 +557,6 @@ const AddProperty = () => {
                     </div>
                   )}
                   
-                  {/* Step 3: Property Images */}
                   {step === 3 && (
                     <div className="space-y-6">
                       <div>
@@ -587,7 +602,6 @@ const AddProperty = () => {
                         </div>
                       </div>
                       
-                      {/* Display uploaded images */}
                       {uploadedImages.length > 0 && (
                         <div>
                           <h4 className="text-sm font-medium mb-2">Uploaded Images</h4>
@@ -623,7 +637,6 @@ const AddProperty = () => {
                     </div>
                   )}
                   
-                  {/* Step 4: Review and Submit */}
                   {step === 4 && (
                     <div className="space-y-6">
                       <div>
@@ -697,6 +710,48 @@ const AddProperty = () => {
                         </div>
                       </div>
                       
+                      <div className="border rounded-md p-4">
+                        <h3 className="font-medium mb-2">Landlord Agreement</h3>
+                        <div className="h-40 overflow-y-auto mb-4 p-3 border rounded bg-gray-50 text-sm text-gray-700">
+                          <p className="mb-2">By listing your property on our platform, you agree to the following terms and conditions:</p>
+                          <ol className="list-decimal pl-4 space-y-2">
+                            <li>The information provided about the property is accurate and truthful.</li>
+                            <li>You are the legal owner of the property or authorized to list it.</li>
+                            <li>You will respond to inquiries from potential tenants in a timely manner.</li>
+                            <li>You will not discriminate against potential tenants based on race, gender, religion, or any protected characteristics.</li>
+                            <li>You understand that a verification fee of KSh 500 is required to make your property visible to potential tenants.</li>
+                            <li>You agree to comply with all local housing laws and regulations.</li>
+                            <li>You understand that our platform charges a commission fee for successful tenancy agreements.</li>
+                            <li>You agree to maintain the accuracy of your listing and update it if any information changes.</li>
+                            <li>You understand that we reserve the right to remove listings that violate our terms of service.</li>
+                          </ol>
+                        </div>
+                        
+                        <FormField
+                          control={form.control}
+                          name="termsAccepted"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                              <div className="space-y-1 leading-none">
+                                <FormLabel>
+                                  I agree to the terms and conditions
+                                </FormLabel>
+                                <FormDescription>
+                                  You must accept these terms to list your property
+                                </FormDescription>
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      
                       <div className="bg-brand-50 p-4 rounded-md">
                         <div className="flex items-start">
                           <div className="mr-3 text-brand-500">
@@ -716,14 +771,25 @@ const AddProperty = () => {
                         <Button type="button" variant="outline" onClick={() => setStep(3)}>
                           Previous
                         </Button>
-                        <Button type="button" onClick={() => setStep(5)}>
+                        <Button 
+                          type="button" 
+                          onClick={() => {
+                            if (!form.getValues("termsAccepted")) {
+                              form.setError("termsAccepted", {
+                                type: "manual",
+                                message: "You must accept the terms and conditions",
+                              });
+                              return;
+                            }
+                            setStep(5);
+                          }}
+                        >
                           Next to Payment
                         </Button>
                       </div>
                     </div>
                   )}
-
-                  {/* Step 5: Payment */}
+                  
                   {step === 5 && (
                     <div className="space-y-6">
                       <div>
@@ -815,14 +881,13 @@ const AddProperty = () => {
         </div>
       </div>
       
-      {/* Payment Dialog */}
       <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{paymentSuccess ? "Payment Successful!" : "Verify Your Listing"}</DialogTitle>
             <DialogDescription>
               {paymentSuccess 
-                ? "Your property has been verified and is now visible to potential tenants." 
+                ? "Your property has been verified and is now live on our platform." 
                 : "To make your property visible to tenants, a verification fee of KSh 500 is required."}
             </DialogDescription>
           </DialogHeader>
@@ -834,7 +899,8 @@ const AddProperty = () => {
                 <div>
                   <p className="text-green-800 font-medium">Property Verified Successfully</p>
                   <p className="text-green-700 text-sm">
-                    Your property listing is now live and visible to potential tenants.
+                    Congratulations! Your property listing is now live and visible to potential tenants.
+                    You can view your property in the verified properties section.
                   </p>
                 </div>
               </div>
@@ -844,6 +910,7 @@ const AddProperty = () => {
                   className="w-full" 
                   onClick={() => {
                     setShowPaymentDialog(false);
+                    setShowSuccessMessage(true);
                     navigate("/landlord/dashboard");
                   }}
                 >
