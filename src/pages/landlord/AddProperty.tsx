@@ -36,7 +36,7 @@ import * as z from "zod";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserRole, PropertyType } from "@/types";
 import { api } from "@/services/api";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Loader2, 
   Home, 
@@ -44,7 +44,8 @@ import {
   Check,
   AlertCircle,
   Image,
-  X
+  X,
+  CreditCard
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -69,6 +70,10 @@ const propertySchema = z.object({
   country: z.string().default("Kenya"),
   features: z.array(z.string()).optional(),
   images: z.array(z.string()).min(1, "At least one image is required"),
+});
+
+const paymentSchema = z.object({
+  phone: z.string().min(10, "Please enter a valid phone number"),
 });
 
 const AddProperty = () => {
@@ -100,6 +105,14 @@ const AddProperty = () => {
       country: "Kenya",
       features: [],
       images: ["https://images.unsplash.com/photo-1568605114967-8130f3a36994"],
+    },
+  });
+  
+  // Payment form setup
+  const paymentForm = useForm<z.infer<typeof paymentSchema>>({
+    resolver: zodResolver(paymentSchema),
+    defaultValues: {
+      phone: user?.phone || "",
     },
   });
   
@@ -166,6 +179,7 @@ const AddProperty = () => {
         description: "Proceed to verify your listing with a payment.",
       });
       
+      // Show the payment dialog after successful property creation
       setShowPaymentDialog(true);
     } catch (error) {
       console.error("Error adding property:", error);
@@ -181,7 +195,7 @@ const AddProperty = () => {
   
   // Handle property verification payment
   const handlePayment = async () => {
-    if (!phoneNumber || phoneNumber.trim() === "") {
+    if (!paymentForm.getValues().phone || paymentForm.getValues().phone.trim() === "") {
       toast({
         title: "Phone Number Required",
         description: "Please enter a valid phone number to proceed with payment.",
@@ -193,8 +207,9 @@ const AddProperty = () => {
     setIsPaymentProcessing(true);
     
     try {
+      // Simulate sending M-Pesa STK Push
       const response = await api.initiatePayment(
-        phoneNumber,
+        paymentForm.getValues().phone,
         500, // KSh 500 verification fee
         "Property Listing Verification"
       );
@@ -202,7 +217,7 @@ const AddProperty = () => {
       if (response.success) {
         toast({
           title: "Payment Initiated",
-          description: `STK Push sent to ${phoneNumber}. Please complete the payment on your phone.`,
+          description: `STK Push sent to ${paymentForm.getValues().phone}. Please check your phone to complete the payment to 0710464858.`,
         });
         
         // Simulate successful payment and verification
@@ -274,11 +289,17 @@ const AddProperty = () => {
                 </div>
                 <span className="text-sm mt-1 block">Review & Submit</span>
               </div>
+              <div className={`flex-1 text-center ${step >= 5 ? "text-brand-500" : "text-gray-400"}`}>
+                <div className={`w-8 h-8 mx-auto rounded-full flex items-center justify-center ${step >= 5 ? "bg-brand-500 text-white" : "bg-gray-200"}`}>
+                  5
+                </div>
+                <span className="text-sm mt-1 block">Payment</span>
+              </div>
             </div>
             <div className="relative h-2 bg-gray-200 mt-4 rounded-full overflow-hidden">
               <div 
                 className="absolute top-0 left-0 h-full bg-brand-500 transition-all duration-300"
-                style={{ width: `${((step - 1) / 3) * 100}%` }}
+                style={{ width: `${((step - 1) / 4) * 100}%` }}
               ></div>
             </div>
           </div>
@@ -695,14 +716,93 @@ const AddProperty = () => {
                         <Button type="button" variant="outline" onClick={() => setStep(3)}>
                           Previous
                         </Button>
-                        <Button type="submit" disabled={isSubmitting}>
+                        <Button type="button" onClick={() => setStep(5)}>
+                          Next to Payment
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Step 5: Payment */}
+                  {step === 5 && (
+                    <div className="space-y-6">
+                      <div>
+                        <h3 className="text-lg font-semibold mb-4">Property Listing Payment</h3>
+                        
+                        <div className="bg-green-50 p-4 rounded-md flex items-start mb-6">
+                          <Check className="h-5 w-5 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
+                          <div>
+                            <p className="text-green-800 font-medium">Property Details Ready</p>
+                            <p className="text-green-700 text-sm">
+                              Your property information has been prepared. Complete the verification payment to make it visible to tenants.
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="border rounded-md p-4 mb-6">
+                          <h3 className="font-medium mb-2">Payment Details</h3>
+                          <dl className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <dt>Amount:</dt>
+                              <dd className="font-medium">KSh 500.00</dd>
+                            </div>
+                            <div className="flex justify-between">
+                              <dt>Payment Method:</dt>
+                              <dd>M-Pesa</dd>
+                            </div>
+                            <div className="flex justify-between">
+                              <dt>Payment To:</dt>
+                              <dd className="font-medium">0710464858</dd>
+                            </div>
+                          </dl>
+                        </div>
+                        
+                        <Form {...paymentForm}>
+                          <form className="space-y-4">
+                            <FormField
+                              control={paymentForm.control}
+                              name="phone"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>M-Pesa Phone Number</FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      type="tel" 
+                                      placeholder="07XXXXXXXX" 
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                  <FormDescription>
+                                    You will receive an STK push to this number to complete the payment
+                                  </FormDescription>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </form>
+                        </Form>
+                      </div>
+                      
+                      <div className="flex justify-between">
+                        <Button type="button" variant="outline" onClick={() => setStep(4)}>
+                          Previous
+                        </Button>
+                        <Button 
+                          type="submit"
+                          className="bg-green-600 hover:bg-green-700"
+                          disabled={isSubmitting}
+                          onClick={form.handleSubmit(onSubmit)}
+                        >
                           {isSubmitting ? (
                             <>
                               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                               Submitting...
                             </>
                           ) : (
-                            "Submit Property"
+                            <>
+                              <CreditCard className="mr-2 h-4 w-4" />
+                              Submit and Pay KSh 500
+                            </>
                           )}
                         </Button>
                       </div>
@@ -773,6 +873,10 @@ const AddProperty = () => {
                   <div className="flex justify-between">
                     <dt>Payment Method:</dt>
                     <dd>M-Pesa</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt>Payment To:</dt>
+                    <dd className="font-medium">0710464858</dd>
                   </div>
                 </dl>
               </div>
