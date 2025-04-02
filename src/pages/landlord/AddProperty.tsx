@@ -44,7 +44,8 @@ import {
   AlertCircle,
   Image,
   X,
-  CreditCard
+  CreditCard,
+  PartyPopper
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -234,6 +235,12 @@ const AddProperty = () => {
           }
           setPaymentSuccess(true);
           setShowSuccessMessage(true);
+          
+          toast({
+            title: "Congratulations!",
+            description: "Your property has been successfully listed and is now live on the platform!",
+          });
+          
           setIsPaymentProcessing(false);
         }, 3000);
       }
@@ -271,13 +278,19 @@ const AddProperty = () => {
           
           {showSuccessMessage && (
             <Alert className="mb-6 bg-green-50 border-green-200">
-              <Check className="h-5 w-5 text-green-500" />
-              <AlertTitle className="text-green-800">Property Listed Successfully!</AlertTitle>
+              <PartyPopper className="h-5 w-5 text-green-500" />
+              <AlertTitle className="text-green-800 text-lg">Congratulations! Property Listed Successfully!</AlertTitle>
               <AlertDescription className="text-green-700">
-                Congratulations! Your property has been successfully verified and is now live on our platform. 
+                Your property has been successfully verified and is now live on our platform! 
                 Tenants can now see your listing in the verified properties section. You can manage your 
-                property from your dashboard.
+                property from your dashboard. Thank you for listing with us!
               </AlertDescription>
+              <Button 
+                className="mt-2 bg-green-600 hover:bg-green-700" 
+                onClick={() => navigate("/landlord/dashboard")}
+              >
+                View My Properties
+              </Button>
             </Alert>
           )}
           
@@ -895,12 +908,12 @@ const AddProperty = () => {
           {paymentSuccess ? (
             <div className="space-y-4">
               <div className="bg-green-50 p-4 rounded-md flex items-start">
-                <Check className="h-5 w-5 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
+                <PartyPopper className="h-5 w-5 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
                 <div>
-                  <p className="text-green-800 font-medium">Property Verified Successfully</p>
+                  <p className="text-green-800 font-medium">Congratulations! Property Verified Successfully</p>
                   <p className="text-green-700 text-sm">
-                    Congratulations! Your property listing is now live and visible to potential tenants.
-                    You can view your property in the verified properties section.
+                    Your property listing is now live and visible to potential tenants.
+                    You can view your property in the verified properties section of your dashboard.
                   </p>
                 </div>
               </div>
