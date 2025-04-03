@@ -6,7 +6,7 @@ export function Footer() {
   return (
     <footer className="bg-gray-900 text-white">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Company Info */}
           <div>
             <div className="flex items-center space-x-2 mb-4">
@@ -61,60 +61,10 @@ export function Footer() {
                   Register
                 </Link>
               </li>
-            </ul>
-          </div>
-
-          {/* Resources */}
-          <div>
-            <h3 className="text-lg font-medium mb-4">Resources</h3>
-            <ul className="space-y-2">
               <li>
                 <Link to="/resources/rental-guides" className="text-gray-400 hover:text-white transition-colors">
                   Rental Guides
                 </Link>
-                <p className="text-xs text-gray-500 mt-1">
-                  Comprehensive guides to help you navigate the rental process in Kenya.
-                </p>
-              </li>
-              <li>
-                <Link to="/resources/rental-guides" className="text-gray-400 hover:text-white transition-colors">
-                  Property Market Reports
-                </Link>
-                <p className="text-xs text-gray-500 mt-1">
-                  Quarterly analysis of property trends and pricing across major Kenyan cities.
-                </p>
-              </li>
-              <li>
-                <Link to="/resources/rental-guides" className="text-gray-400 hover:text-white transition-colors">
-                  Tenant Rights
-                </Link>
-                <p className="text-xs text-gray-500 mt-1">
-                  Learn about your legal rights and protections as a tenant in Kenya.
-                </p>
-              </li>
-              <li>
-                <Link to="/resources/rental-guides" className="text-gray-400 hover:text-white transition-colors">
-                  Landlord Tips
-                </Link>
-                <p className="text-xs text-gray-500 mt-1">
-                  Best practices for property management and tenant relations.
-                </p>
-              </li>
-              <li>
-                <Link to="/resources/rental-guides" className="text-gray-400 hover:text-white transition-colors">
-                  Privacy Policy
-                </Link>
-                <p className="text-xs text-gray-500 mt-1">
-                  How we protect and handle your personal information.
-                </p>
-              </li>
-              <li>
-                <Link to="/resources/rental-guides" className="text-gray-400 hover:text-white transition-colors">
-                  Terms of Service
-                </Link>
-                <p className="text-xs text-gray-500 mt-1">
-                  Rules and guidelines for using our platform.
-                </p>
               </li>
             </ul>
           </div>
