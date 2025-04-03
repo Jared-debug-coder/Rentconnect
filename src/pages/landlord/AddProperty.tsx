@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
@@ -917,4 +918,103 @@ const AddProperty = () => {
           
           {paymentSuccess ? (
             <div className="space-y-4">
-              <div className="bg-green-5
+              <div className="bg-green-50 p-4 rounded-md flex items-start">
+                <PartyPopper className="h-5 w-5 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
+                <div>
+                  <p className="text-green-800 font-medium">Congratulations!</p>
+                  <p className="text-green-700 text-sm">
+                    Your property has been verified and is now live on our platform. It will be visible to all potential tenants searching for properties.
+                  </p>
+                </div>
+              </div>
+              <Button 
+                className="w-full bg-green-600 hover:bg-green-700" 
+                onClick={() => {
+                  setShowPaymentDialog(false);
+                  navigate("/landlord/dashboard");
+                }}
+              >
+                View My Properties
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="border rounded-md p-4">
+                <h3 className="font-medium mb-2">Payment Instructions</h3>
+                <p className="text-sm mb-3">
+                  To complete your property listing, please make a payment of <span className="font-bold">KSh 500</span> to our Till Number.
+                </p>
+                <div className="bg-gray-50 p-3 rounded-md text-center mb-3">
+                  <p className="text-lg font-bold">Till Number: 283746</p>
+                </div>
+                <p className="text-sm text-gray-600">
+                  After making the payment, the system will automatically verify and activate your listing.
+                </p>
+              </div>
+              
+              <div>
+                <FormField
+                  control={paymentForm.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone Number Used for Payment</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="tel" 
+                          placeholder="07XXXXXXXX" 
+                          {...field}
+                          onChange={(e) => {
+                            field.onChange(e);
+                            setPhoneNumber(e.target.value);
+                          }}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Enter the phone number you'll use to make the payment
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <Button 
+                className="w-full"
+                onClick={handlePayment}
+                disabled={isPaymentProcessing}
+              >
+                {isPaymentProcessing ? (
+                  <>
+                    {isCheckingPayment ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Verifying Payment...
+                      </>
+                    ) : (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Processing...
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    Pay KSh 500 Now
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+      
+      <div className="mt-auto">
+        <Footer />
+      </div>
+    </div>
+  );
+};
+
+export default AddProperty;
