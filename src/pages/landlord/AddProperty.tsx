@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
@@ -916,4 +917,59 @@ const AddProperty = () => {
             <DialogDescription>
               {paymentSuccess 
                 ? "Your property has been verified and is now live on our platform." 
-                : "To make your property visible to tenants, a
+                : "To make your property visible to tenants, a verification fee of KSh 500 is required."}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {!paymentSuccess && (
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600">
+                Please send KSh 500 to Till Number: <span className="font-medium">283746</span>
+              </p>
+              
+              <div className="bg-yellow-50 p-3 rounded-md border border-yellow-200">
+                <p className="text-sm text-yellow-800 flex items-start">
+                  <Phone className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
+                  An STK push will be sent to your phone. Please check your phone and enter your PIN to complete the payment.
+                </p>
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter className="sm:justify-between">
+            {!paymentSuccess && (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={isPaymentProcessing}
+                  onClick={() => setShowPaymentDialog(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="button"
+                  disabled={isPaymentProcessing}
+                  onClick={handlePayment}
+                >
+                  {isPaymentProcessing ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {isCheckingPayment ? "Verifying..." : "Processing..."}
+                    </>
+                  ) : (
+                    "Proceed with Payment"
+                  )}
+                </Button>
+              </>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      <Footer />
+    </div>
+  );
+};
+
+export default AddProperty;
