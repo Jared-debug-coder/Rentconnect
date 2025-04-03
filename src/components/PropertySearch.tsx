@@ -11,12 +11,14 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { PropertyType } from "@/types";
-import { Search, MapPin } from "lucide-react";
+import { Search, MapPin, Home as HomeIcon, DollarSign } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 export function PropertySearch() {
   const navigate = useNavigate();
   const { currentLocation, detectCurrentLocation, locationLoading } = useLocation();
+  const { toast } = useToast();
   
   const [searchParams, setSearchParams] = useState({
     location: currentLocation || "",
@@ -36,6 +38,15 @@ export function PropertySearch() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!searchParams.location) {
+      toast({
+        title: "Location Required",
+        description: "Please enter a location to search for properties",
+        variant: "destructive",
+      });
+      return;
+    }
     
     // Build query string
     const queryParams = new URLSearchParams();
@@ -57,11 +68,27 @@ export function PropertySearch() {
     }
     
     navigate(`/properties?${queryParams.toString()}`);
+    
+    toast({
+      title: "Searching Properties",
+      description: `Finding properties in ${searchParams.location}...`,
+    });
   };
 
   const handleLocationDetect = async () => {
-    await detectCurrentLocation();
-    // The location will be updated in the context
+    try {
+      await detectCurrentLocation();
+      toast({
+        title: "Location Detected",
+        description: "Your current location has been detected successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Location Detection Failed",
+        description: "Please enter your location manually",
+        variant: "destructive",
+      });
+    }
   };
 
   // Update search location when context location changes
@@ -72,17 +99,18 @@ export function PropertySearch() {
   }, [currentLocation]); // Add dependency to ensure it runs when currentLocation changes
 
   return (
-    <form onSubmit={handleSearch} className="bg-white p-4 rounded-lg shadow-lg">
+    <form onSubmit={handleSearch} className="bg-white p-4 md:p-6 rounded-lg shadow-lg">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {/* Location */}
         <div className="relative">
           <div className="flex">
             <Input
               name="location"
-              placeholder="Location"
+              placeholder="Enter location"
               value={searchParams.location}
               onChange={handleChange}
               className="pr-10"
+              required
             />
             <Button 
               type="button" 
@@ -92,14 +120,19 @@ export function PropertySearch() {
               onClick={handleLocationDetect}
               disabled={locationLoading}
             >
-              <MapPin className="h-4 w-4" />
+              {locationLoading ? (
+                <div className="animate-spin h-4 w-4 border-2 border-brand-500 border-t-transparent rounded-full" />
+              ) : (
+                <MapPin className="h-4 w-4" />
+              )}
             </Button>
           </div>
         </div>
         
         {/* Property Type */}
         <Select value={searchParams.type} onValueChange={handleTypeChange}>
-          <SelectTrigger>
+          <SelectTrigger className="flex items-center">
+            <HomeIcon className="h-4 w-4 mr-2 text-gray-500" />
             <SelectValue placeholder="Property Type" />
           </SelectTrigger>
           <SelectContent>
@@ -114,26 +147,34 @@ export function PropertySearch() {
         
         {/* Price Range */}
         <div className="flex space-x-2">
-          <Input
-            name="minPrice"
-            placeholder="Min Price"
-            type="number"
-            value={searchParams.minPrice}
-            onChange={handleChange}
-          />
-          <Input
-            name="maxPrice"
-            placeholder="Max Price"
-            type="number"
-            value={searchParams.maxPrice}
-            onChange={handleChange}
-          />
+          <div className="relative flex-1">
+            <DollarSign className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <Input
+              name="minPrice"
+              placeholder="Min Price"
+              type="number"
+              value={searchParams.minPrice}
+              onChange={handleChange}
+              className="pl-8"
+            />
+          </div>
+          <div className="relative flex-1">
+            <DollarSign className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <Input
+              name="maxPrice"
+              placeholder="Max Price"
+              type="number"
+              value={searchParams.maxPrice}
+              onChange={handleChange}
+              className="pl-8"
+            />
+          </div>
         </div>
         
         {/* Search Button */}
         <Button type="submit" className="w-full">
           <Search className="h-4 w-4 mr-2" />
-          Search
+          Search Properties
         </Button>
       </div>
     </form>

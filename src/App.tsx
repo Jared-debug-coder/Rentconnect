@@ -22,6 +22,7 @@ import NotFound from "./pages/NotFound";
 
 // Resource Pages
 import RentalGuides from "./pages/resources/RentalGuides";
+import ResourcePages from "./pages/resources/ResourcePages";
 
 const queryClient = new QueryClient();
 
@@ -43,7 +44,8 @@ const App = () => (
               <Route path="/contact" element={<Contact />} />
               
               {/* Resource Pages */}
-              <Route path="/resources/rental-guides" element={<RentalGuides />} />
+              <Route path="/resources/rental-guides" element={<ResourcePages />} />
+              <Route path="/resources/:category" element={<ResourcePages />} />
               
               {/* Landlord routes */}
               <Route path="/landlord/dashboard" element={<LandlordDashboard />} />

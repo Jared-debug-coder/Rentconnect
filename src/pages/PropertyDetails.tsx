@@ -39,7 +39,10 @@ import {
   Mail,
   Check,
   Loader2,
-  Shield
+  Shield,
+  ChevronLeft,
+  ChevronRight,
+  Phone
 } from "lucide-react";
 import { Property, Booking } from "@/types";
 import { api } from "@/services/api";
@@ -67,6 +70,8 @@ const PropertyDetails = () => {
   const [bookingLoading, setBookingLoading] = useState(false);
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showImageDialog, setShowImageDialog] = useState(false);
   
   const { user } = useAuth();
   const { toast } = useToast();
@@ -168,6 +173,29 @@ const PropertyDetails = () => {
     }
   };
 
+  const nextImage = () => {
+    if (!property) return;
+    setCurrentImageIndex((prev) => 
+      prev === property.images.length - 1 ? 0 : prev + 1
+    );
+  };
+
+  const prevImage = () => {
+    if (!property) return;
+    setCurrentImageIndex((prev) => 
+      prev === 0 ? property.images.length - 1 : prev - 1
+    );
+  };
+
+  const handleThumbnailClick = (index: number) => {
+    setCurrentImageIndex(index);
+  };
+
+  const openFullScreenImage = (index: number) => {
+    setCurrentImageIndex(index);
+    setShowImageDialog(true);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -196,6 +224,16 @@ const PropertyDetails = () => {
     );
   }
 
+  // Ensure property has at least 3 images
+  const propertyImages = property.images.length >= 3 
+    ? property.images 
+    : [
+        ...property.images,
+        "https://images.unsplash.com/photo-1560518883-ce09059eeffa",
+        "https://images.unsplash.com/photo-1600585154526-990dced4db0d",
+        "https://images.unsplash.com/photo-1568605114967-8130f3a36994"
+      ].slice(0, 4);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -214,9 +252,10 @@ const PropertyDetails = () => {
             <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
               <div className="relative aspect-video">
                 <img
-                  src={property.images[0] || "https://images.unsplash.com/photo-1568605114967-8130f3a36994"}
+                  src={propertyImages[currentImageIndex]}
                   alt={property.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover cursor-pointer"
+                  onClick={() => openFullScreenImage(currentImageIndex)}
                 />
                 {property.isVerified && (
                   <div className="absolute top-4 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center">
@@ -224,14 +263,45 @@ const PropertyDetails = () => {
                     Verified
                   </div>
                 )}
+                
+                {/* Image navigation buttons */}
+                <button
+                  onClick={prevImage}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full p-2"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                <button
+                  onClick={nextImage}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full p-2"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+                
+                <div className="absolute bottom-4 left-0 right-0 flex justify-center">
+                  <div className="bg-black/30 px-3 py-1 rounded-full text-white text-sm">
+                    {currentImageIndex + 1} / {propertyImages.length}
+                  </div>
+                </div>
               </div>
               
-              {/* Multiple images would go here in a real implementation */}
+              {/* Thumbnail gallery */}
               <div className="p-4 flex overflow-x-auto gap-2">
-                {/* Placeholder for multiple images */}
-                <div className="flex-shrink-0 w-24 h-24 bg-gray-200 rounded"></div>
-                <div className="flex-shrink-0 w-24 h-24 bg-gray-200 rounded"></div>
-                <div className="flex-shrink-0 w-24 h-24 bg-gray-200 rounded"></div>
+                {propertyImages.map((image, index) => (
+                  <div 
+                    key={index} 
+                    className={`flex-shrink-0 w-24 h-24 rounded cursor-pointer border-2 ${
+                      index === currentImageIndex ? 'border-brand-500' : 'border-transparent'
+                    }`}
+                    onClick={() => handleThumbnailClick(index)}
+                  >
+                    <img 
+                      src={image} 
+                      alt={`Property view ${index + 1}`} 
+                      className="w-full h-full object-cover rounded"
+                    />
+                  </div>
+                ))}
               </div>
             </div>
             
@@ -318,6 +388,10 @@ const PropertyDetails = () => {
                     <Mail className="h-4 w-4 text-gray-500 mr-2" />
                     <span className="text-sm">Contact via our secure platform</span>
                   </div>
+                  <div className="flex items-center">
+                    <Phone className="h-4 w-4 text-gray-500 mr-2" />
+                    <span className="text-sm">Property manager: {property.landlordPhone || "Contact via booking"}</span>
+                  </div>
                 </div>
               </CardContent>
               <CardFooter className="flex flex-col space-y-3">
@@ -337,7 +411,7 @@ const PropertyDetails = () => {
                         </div>
                         <h3 className="text-lg font-medium text-gray-900 mb-1">Request Submitted!</h3>
                         <p className="text-gray-500 mb-4">
-                          The property manager will contact you shortly.
+                          The property manager will contact you shortly at {form.getValues("phone")}.
                         </p>
                       </div>
                     ) : (
@@ -435,7 +509,7 @@ const PropertyDetails = () => {
                           />
                           
                           <div className="text-sm text-gray-500 my-2">
-                            <p>Contact information will only be shared with the property manager after you submit your request.</p>
+                            <p>Your contact information will be shared with the property manager so they can get in touch with you.</p>
                           </div>
                           
                           <Button type="submit" className="w-full" disabled={bookingLoading}>
@@ -492,6 +566,51 @@ const PropertyDetails = () => {
           </div>
         </div>
       </div>
+      
+      {/* Full-screen image dialog */}
+      <Dialog open={showImageDialog} onOpenChange={setShowImageDialog}>
+        <DialogContent className="max-w-5xl p-0 overflow-hidden bg-black/95">
+          <div className="relative h-[80vh] flex items-center justify-center">
+            <button
+              onClick={() => {
+                prevImage();
+              }}
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full p-3 z-10"
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </button>
+            
+            <img
+              src={propertyImages[currentImageIndex]}
+              alt={`Property view ${currentImageIndex + 1}`}
+              className="max-h-full max-w-full object-contain"
+            />
+            
+            <button
+              onClick={() => {
+                nextImage();
+              }}
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full p-3 z-10"
+            >
+              <ChevronRight className="h-6 w-6" />
+            </button>
+            
+            <div className="absolute bottom-4 left-0 right-0 flex justify-center">
+              <div className="flex gap-1">
+                {propertyImages.map((_, index) => (
+                  <button
+                    key={index}
+                    className={`w-2 h-2 rounded-full ${
+                      index === currentImageIndex ? 'bg-white' : 'bg-white/30'
+                    }`}
+                    onClick={() => handleThumbnailClick(index)}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
       
       <Footer />
     </div>

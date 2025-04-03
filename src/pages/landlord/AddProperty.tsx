@@ -45,7 +45,8 @@ import {
   Image,
   X,
   CreditCard,
-  PartyPopper
+  PartyPopper,
+  Phone
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -80,7 +81,7 @@ const propertySchema = z.object({
 });
 
 const paymentSchema = z.object({
-  phone: z.string().min(10, "Please enter a valid phone number"),
+  phone: z.string().min(10, "Please enter a valid phone number").max(12, "Phone number is too long"),
 });
 
 const AddProperty = () => {
@@ -92,9 +93,14 @@ const AddProperty = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [propertyId, setPropertyId] = useState<string | null>(null);
-  const [uploadedImages, setUploadedImages] = useState<string[]>(["https://images.unsplash.com/photo-1568605114967-8130f3a36994"]);
+  const [uploadedImages, setUploadedImages] = useState<string[]>([
+    "https://images.unsplash.com/photo-1568605114967-8130f3a36994",
+    "https://images.unsplash.com/photo-1560518883-ce09059eeffa",
+    "https://images.unsplash.com/photo-1600585154526-990dced4db0d"
+  ]);
   const [phoneNumber, setPhoneNumber] = useState(user?.phone || "");
   const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
+  const [isCheckingPayment, setIsCheckingPayment] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   
@@ -111,7 +117,7 @@ const AddProperty = () => {
       city: "",
       country: "Kenya",
       features: [],
-      images: ["https://images.unsplash.com/photo-1568605114967-8130f3a36994"],
+      images: uploadedImages,
       termsAccepted: false,
     },
   });
@@ -217,33 +223,37 @@ const AddProperty = () => {
     setIsPaymentProcessing(true);
     
     try {
-      const response = await api.initiatePayment(
-        paymentForm.getValues().phone,
-        500,
-        "Property Listing Verification"
-      );
+      // Simulate payment processing with Till Number
+      const tillNumber = "283746";
       
-      if (response.success) {
-        toast({
-          title: "Payment Initiated",
-          description: `STK Push sent to ${paymentForm.getValues().phone}. Please check your phone to complete the payment to 0710464858.`,
-        });
+      toast({
+        title: "Payment Instructions",
+        description: `Please pay KSh 500 to Till Number: ${tillNumber}. System will automatically verify your payment.`,
+      });
+      
+      // Simulate payment verification
+      setTimeout(() => {
+        setIsCheckingPayment(true);
         
+        // After 3 seconds, simulate successful payment
         setTimeout(() => {
           if (propertyId) {
             api.verifyProperty(propertyId);
           }
+          
           setPaymentSuccess(true);
           setShowSuccessMessage(true);
           
           toast({
-            title: "Congratulations!",
+            title: "Payment Confirmed!",
             description: "Your property has been successfully listed and is now live on the platform!",
+            variant: "default",
           });
           
           setIsPaymentProcessing(false);
+          setIsCheckingPayment(false);
         }, 3000);
-      }
+      }, 4000);
     } catch (error) {
       console.error("Payment error:", error);
       toast({
@@ -578,7 +588,7 @@ const AddProperty = () => {
                           <Image className="h-8 w-8 mx-auto text-gray-400 mb-2" />
                           <h3 className="text-sm font-medium">Upload Property Images</h3>
                           <p className="text-xs text-gray-500 mb-2">
-                            Drag & drop images or click to browse
+                            Drag & drop images or click to browse. Upload multiple images to showcase your property.
                           </p>
                           <FormField
                             control={form.control}
@@ -610,14 +620,14 @@ const AddProperty = () => {
                             )}
                           />
                           <p className="text-xs text-gray-500 mt-2">
-                            Add high-quality images to make your listing stand out
+                            Add at least 3-5 high-quality images to make your listing stand out
                           </p>
                         </div>
                       </div>
                       
                       {uploadedImages.length > 0 && (
                         <div>
-                          <h4 className="text-sm font-medium mb-2">Uploaded Images</h4>
+                          <h4 className="text-sm font-medium mb-2">Uploaded Images ({uploadedImages.length})</h4>
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                             {uploadedImages.map((image, index) => (
                               <div key={index} className="relative rounded-md overflow-hidden h-24 bg-gray-100">
@@ -827,11 +837,11 @@ const AddProperty = () => {
                             </div>
                             <div className="flex justify-between">
                               <dt>Payment Method:</dt>
-                              <dd>M-Pesa</dd>
+                              <dd>Till Number</dd>
                             </div>
                             <div className="flex justify-between">
                               <dt>Payment To:</dt>
-                              <dd className="font-medium">0710464858</dd>
+                              <dd className="font-medium">Till Number: 283746</dd>
                             </div>
                           </dl>
                         </div>
@@ -843,7 +853,7 @@ const AddProperty = () => {
                               name="phone"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>M-Pesa Phone Number</FormLabel>
+                                  <FormLabel>Phone Number for Payment Verification</FormLabel>
                                   <FormControl>
                                     <Input 
                                       type="tel" 
@@ -852,7 +862,7 @@ const AddProperty = () => {
                                     />
                                   </FormControl>
                                   <FormDescription>
-                                    You will receive an STK push to this number to complete the payment
+                                    Enter the phone number you'll use to make the payment
                                   </FormDescription>
                                   <FormMessage />
                                 </FormItem>
@@ -907,109 +917,4 @@ const AddProperty = () => {
           
           {paymentSuccess ? (
             <div className="space-y-4">
-              <div className="bg-green-50 p-4 rounded-md flex items-start">
-                <PartyPopper className="h-5 w-5 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
-                <div>
-                  <p className="text-green-800 font-medium">Congratulations! Property Verified Successfully</p>
-                  <p className="text-green-700 text-sm">
-                    Your property listing is now live and visible to potential tenants.
-                    You can view your property in the verified properties section of your dashboard.
-                  </p>
-                </div>
-              </div>
-              
-              <DialogFooter>
-                <Button 
-                  className="w-full" 
-                  onClick={() => {
-                    setShowPaymentDialog(false);
-                    setShowSuccessMessage(true);
-                    navigate("/landlord/dashboard");
-                  }}
-                >
-                  Go to Dashboard
-                </Button>
-              </DialogFooter>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="bg-green-50 p-4 rounded-md flex items-start">
-                <Check className="h-5 w-5 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
-                <div>
-                  <p className="text-green-800 font-medium">Property Added Successfully</p>
-                  <p className="text-green-700 text-sm">
-                    Your property has been added to our database. Complete the verification to make it visible to tenants.
-                  </p>
-                </div>
-              </div>
-              
-              <div className="border rounded-md p-4">
-                <h3 className="font-medium mb-2">Payment Details</h3>
-                <dl className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <dt>Amount:</dt>
-                    <dd className="font-medium">KSh 500.00</dd>
-                  </div>
-                  <div className="flex justify-between">
-                    <dt>Payment Method:</dt>
-                    <dd>M-Pesa</dd>
-                  </div>
-                  <div className="flex justify-between">
-                    <dt>Payment To:</dt>
-                    <dd className="font-medium">0710464858</dd>
-                  </div>
-                </dl>
-              </div>
-              
-              <div className="space-y-2">
-                <FormLabel>Enter M-Pesa Phone Number</FormLabel>
-                <Input 
-                  type="tel" 
-                  placeholder="07XXXXXXXX" 
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                />
-                <p className="text-xs text-gray-500">
-                  You will receive an STK push to this number
-                </p>
-              </div>
-              
-              <DialogFooter className="flex-col sm:flex-col gap-2">
-                <Button 
-                  className="w-full" 
-                  onClick={handlePayment}
-                  disabled={isPaymentProcessing || !phoneNumber}
-                >
-                  {isPaymentProcessing ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    "Pay KSh 500 with M-Pesa"
-                  )}
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={() => {
-                    setShowPaymentDialog(false);
-                    navigate("/landlord/dashboard");
-                  }}
-                  disabled={isPaymentProcessing}
-                >
-                  Skip for Now
-                </Button>
-              </DialogFooter>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-      
-      <Footer />
-    </div>
-  );
-};
-
-export default AddProperty;
+              <div className="bg-green-5
