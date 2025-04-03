@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -59,6 +58,7 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/components/ui/alert";
+import { useQueryClient } from "@tanstack/react-query";
 
 const propertySchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters"),
@@ -85,6 +85,7 @@ const AddProperty = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -100,6 +101,7 @@ const AddProperty = () => {
   const [isCheckingPayment, setIsCheckingPayment] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [paymentStage, setPaymentStage] = useState(0);
   
   const form = useForm<z.infer<typeof propertySchema>>({
     resolver: zodResolver(propertySchema),
@@ -218,9 +220,9 @@ const AddProperty = () => {
     }
     
     setIsPaymentProcessing(true);
+    setPaymentStage(1);
     
     try {
-      // Simulate payment processing with Till Number
       const tillNumber = "283746";
       
       toast({
@@ -228,40 +230,60 @@ const AddProperty = () => {
         description: `Please pay KSh 500 to Till Number: ${tillNumber}. System is processing your payment...`,
       });
       
-      // Simulate payment verification and STK push
-      toast({
-        title: "STK Push Sent",
-        description: "Please check your phone and enter PIN to complete payment",
-      });
-      
       setTimeout(() => {
-        setIsCheckingPayment(true);
+        setPaymentStage(2);
+        toast({
+          title: "STK Push Sent",
+          description: "Please check your phone and enter PIN to complete payment",
+        });
         
-        // After 3 seconds, simulate successful payment
         setTimeout(() => {
-          if (propertyId) {
-            api.verifyProperty(propertyId);
-          }
-          
-          setPaymentSuccess(true);
-          setShowPaymentDialog(false); // Close the dialog
-          setShowSuccessMessage(true);
+          setPaymentStage(3);
+          setIsCheckingPayment(true);
           
           toast({
-            title: "Payment Confirmed!",
-            description: "Your property has been successfully listed and is now live on the platform!",
-            variant: "default",
+            title: "Verifying Payment",
+            description: "Please wait while we confirm your payment...",
           });
           
-          setIsPaymentProcessing(false);
-          setIsCheckingPayment(false);
-          
-          // Automatically redirect to dashboard after short delay
           setTimeout(() => {
-            navigate("/landlord/dashboard");
-          }, 5000);
-        }, 3000);
-      }, 2000);
+            setPaymentStage(4);
+            toast({
+              title: "Payment Being Processed",
+              description: "Your payment is being processed by our system...",
+            });
+            
+            setTimeout(() => {
+              setPaymentStage(5);
+              if (propertyId) {
+                api.verifyProperty(propertyId)
+                  .then(() => {
+                    if (user) {
+                      queryClient.invalidateQueries({ queryKey: ['landlordProperties', user.id] });
+                    }
+                  });
+              }
+              
+              setPaymentSuccess(true);
+              setShowPaymentDialog(false);
+              setShowSuccessMessage(true);
+              
+              toast({
+                title: "Payment Confirmed!",
+                description: "Your property has been successfully listed and is now live on the platform!",
+                variant: "default",
+              });
+              
+              setIsPaymentProcessing(false);
+              setIsCheckingPayment(false);
+              
+              setTimeout(() => {
+                navigate("/landlord/dashboard");
+              }, 5000);
+            }, 5000);
+          }, 7000);
+        }, 8000);
+      }, 3000);
     } catch (error) {
       console.error("Payment error:", error);
       toast({
@@ -270,8 +292,25 @@ const AddProperty = () => {
         variant: "destructive",
       });
       setIsPaymentProcessing(false);
+      setIsCheckingPayment(false);
     }
   };
+  
+  useEffect(() => {
+    if (isPaymentProcessing) {
+      const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+      };
+      
+      window.addEventListener('beforeunload', handleBeforeUnload);
+      
+      return () => {
+        window.removeEventListener('beforeunload', handleBeforeUnload);
+      };
+    }
+  }, [isPaymentProcessing]);
   
   if (!user) {
     return <Navigate to="/login" />;
@@ -845,7 +884,7 @@ const AddProperty = () => {
                             </div>
                             <div className="flex justify-between">
                               <dt>Payment Method:</dt>
-                              <dd>Till Number</dd>
+                              <dd>M-Pesa</dd>
                             </div>
                             <div className="flex justify-between">
                               <dt>Payment To:</dt>
@@ -860,7 +899,7 @@ const AddProperty = () => {
                             name="phone"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Phone Number for Payment Verification</FormLabel>
+                                <FormLabel>Phone Number for Payment</FormLabel>
                                 <FormControl>
                                   <Input 
                                     type="tel" 
@@ -869,7 +908,7 @@ const AddProperty = () => {
                                   />
                                 </FormControl>
                                 <FormDescription>
-                                  Enter the phone number you'll use to make the payment
+                                  Enter the phone number to receive M-Pesa payment prompt
                                 </FormDescription>
                                 <FormMessage />
                               </FormItem>
@@ -891,7 +930,11 @@ const AddProperty = () => {
                           {isPaymentProcessing ? (
                             <>
                               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              {isCheckingPayment ? "Verifying Payment..." : "Processing..."}
+                              {paymentStage === 1 && "Initiating..."}
+                              {paymentStage === 2 && "Sending STK..."}
+                              {paymentStage === 3 && "Awaiting..."}
+                              {paymentStage === 4 && "Processing..."}
+                              {paymentStage === 5 && "Verifying..."}
                             </>
                           ) : (
                             <>
@@ -930,7 +973,7 @@ const AddProperty = () => {
               <div className="bg-yellow-50 p-3 rounded-md border border-yellow-200">
                 <p className="text-sm text-yellow-800 flex items-start">
                   <Phone className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
-                  An STK push will be sent to your phone. Please check your phone and enter your PIN to complete the payment.
+                  An M-Pesa STK push will be sent to your phone. Please check your phone and enter your PIN to complete the payment.
                 </p>
               </div>
             </div>
@@ -955,7 +998,11 @@ const AddProperty = () => {
                   {isPaymentProcessing ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {isCheckingPayment ? "Verifying..." : "Processing..."}
+                      {paymentStage === 1 && "Initiating..."}
+                      {paymentStage === 2 && "Sending STK..."}
+                      {paymentStage === 3 && "Awaiting..."}
+                      {paymentStage === 4 && "Processing..."}
+                      {paymentStage === 5 && "Verifying..."}
                     </>
                   ) : (
                     "Proceed with Payment"

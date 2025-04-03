@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -153,6 +153,7 @@ const ResourcePages = () => {
   const [activeTab, setActiveTab] = useState(category || "rental-guides");
   const { toast } = useToast();
   const [currentCategoryData, setCurrentCategoryData] = useState(resourcesData["rental-guides"]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (category && resourcesData[category]) {
@@ -164,7 +165,6 @@ const ResourcePages = () => {
     }
   }, [category]);
 
-  // Function to handle social sharing
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
@@ -173,13 +173,26 @@ const ResourcePages = () => {
         url: window.location.href,
       }).catch((error) => console.log('Error sharing', error));
     } else {
-      // Fallback for browsers that don't support the Web Share API
       toast({
         title: "Link Copied!",
         description: "The link has been copied to your clipboard.",
       });
       navigator.clipboard.writeText(window.location.href);
     }
+  };
+
+  const handleReadMore = (articleId) => {
+    toast({
+      title: "Article Opened",
+      description: "Loading the full article content...",
+    });
+    
+    setTimeout(() => {
+      toast({
+        title: "Article Loaded",
+        description: "You are now viewing the full article content.",
+      });
+    }, 1000);
   };
 
   return (
@@ -206,7 +219,10 @@ const ResourcePages = () => {
           <p className="text-gray-600">{currentCategoryData.description}</p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <Tabs value={activeTab} onValueChange={(value) => {
+          setActiveTab(value);
+          navigate(`/resources/${value}`);
+        }}>
           <TabsList className="mb-4">
             {Object.entries(resourcesData).map(([key, resource]) => (
               <TabsTrigger key={key} value={key}>
@@ -228,7 +244,12 @@ const ResourcePages = () => {
                   <p className="text-gray-700">{article.content}</p>
                   <div className="mt-4 flex justify-between items-center">
                     <div className="flex space-x-2">
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" onClick={() => {
+                        toast({
+                          title: "Article Saved",
+                          description: "This article has been saved to your bookmarks.",
+                        });
+                      }}>
                         <Bookmark className="h-4 w-4 mr-1" />
                         Save
                       </Button>
@@ -237,7 +258,7 @@ const ResourcePages = () => {
                         Share
                       </Button>
                     </div>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => handleReadMore(article.id)}>
                       <FileText className="h-4 w-4 mr-1" />
                       Read More
                     </Button>
