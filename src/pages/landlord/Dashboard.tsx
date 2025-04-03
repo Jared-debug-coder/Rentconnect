@@ -53,6 +53,7 @@ const LandlordDashboard = () => {
   const [properties, setProperties] = useState<Property[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   
   useEffect(() => {
     const fetchData = async () => {
@@ -80,7 +81,36 @@ const LandlordDashboard = () => {
     };
     
     fetchData();
-  }, [user, toast]);
+    
+    // Check for new bookings every 30 seconds
+    const intervalId = setInterval(() => {
+      if (user) {
+        api.getLandlordBookings(user.id).then(newBookings => {
+          // Check if there are any new pending bookings
+          const currentPendingIds = bookings.filter(b => b.status === "pending").map(b => b.id);
+          const newPendingBookings = newBookings.filter(
+            b => b.status === "pending" && !currentPendingIds.includes(b.id)
+          );
+          
+          if (newPendingBookings.length > 0) {
+            setBookings(newBookings);
+            
+            // Show notification for each new booking
+            newPendingBookings.forEach(booking => {
+              const property = properties.find(p => p.id === booking.propertyId);
+              toast({
+                title: "New Booking Request",
+                description: `${booking.tenantName} wants to view your property "${property?.title || 'Unknown property'}"`,
+                variant: "default",
+              });
+            });
+          }
+        });
+      }
+    }, 30000);
+    
+    return () => clearInterval(intervalId);
+  }, [user, toast, refreshTrigger]);
 
   const handleConfirmBooking = (bookingId: string) => {
     api.updateBookingStatus(bookingId, "confirmed")
@@ -92,10 +122,23 @@ const LandlordDashboard = () => {
               : booking
           )
         );
+        
+        // Find the booking and related property for the notification
+        const booking = bookings.find(b => b.id === bookingId);
+        const property = properties.find(p => booking && p.id === booking.propertyId);
+        
         toast({
           title: "Booking Confirmed",
-          description: "The viewing has been confirmed.",
+          description: "The tenant has been notified about the confirmed viewing.",
         });
+        
+        // Simulate notification to tenant
+        if (booking) {
+          toast({
+            title: "Tenant Notification Sent",
+            description: `${booking.tenantName} has been notified that their viewing for "${property?.title || 'your property'}" has been confirmed.`,
+          });
+        }
       })
       .catch(error => {
         console.error("Error confirming booking:", error);
@@ -117,10 +160,23 @@ const LandlordDashboard = () => {
               : booking
           )
         );
+        
+        // Find the booking and related property for the notification
+        const booking = bookings.find(b => b.id === bookingId);
+        const property = properties.find(p => booking && p.id === booking.propertyId);
+        
         toast({
           title: "Booking Declined",
-          description: "The viewing request has been declined.",
+          description: "The tenant has been notified about the declined viewing.",
         });
+        
+        // Simulate notification to tenant
+        if (booking) {
+          toast({
+            title: "Tenant Notification Sent",
+            description: `${booking.tenantName} has been notified about the status of their viewing request for "${property?.title || 'your property'}".`,
+          });
+        }
       })
       .catch(error => {
         console.error("Error declining booking:", error);
@@ -130,6 +186,10 @@ const LandlordDashboard = () => {
           variant: "destructive",
         });
       });
+  };
+  
+  const refreshDashboard = () => {
+    setRefreshTrigger(prev => prev + 1);
   };
   
   // Ensure user is a landlord
@@ -155,7 +215,11 @@ const LandlordDashboard = () => {
             <h1 className="text-3xl font-bold text-gray-900">Landlord Dashboard</h1>
             <p className="text-gray-600">Welcome back, {user.name}</p>
           </div>
-          <div className="mt-4 md:mt-0">
+          <div className="mt-4 md:mt-0 flex gap-2">
+            <Button variant="outline" onClick={refreshDashboard} className="flex items-center">
+              <Loader2 className="h-4 w-4 mr-2" />
+              Refresh
+            </Button>
             <Link to="/landlord/add-property">
               <Button className="bg-brand-500 hover:bg-brand-600">
                 <Plus className="h-4 w-4 mr-2" />

@@ -63,6 +63,7 @@ export interface Booking {
   time: string;
   status: "pending" | "confirmed" | "cancelled";
   message?: string;
+  statusMessage?: string; // Added field for custom messages from landlord
   createdAt: Date;
 }
 

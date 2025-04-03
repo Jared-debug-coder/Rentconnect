@@ -4,15 +4,18 @@ import { Property, PropertyType, PropertyFilters } from "@/types";
 import { PropertyCard } from "@/components/PropertyCard";
 import { api } from "@/services/api";
 import { Loader2 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 interface PropertyListProps {
   filters?: PropertyFilters;
+  refreshTrigger?: number;
 }
 
-export function PropertyList({ filters }: PropertyListProps) {
+export function PropertyList({ filters, refreshTrigger = 0 }: PropertyListProps) {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchProperties = async () => {
@@ -24,13 +27,18 @@ export function PropertyList({ filters }: PropertyListProps) {
       } catch (err) {
         console.error("Error fetching properties:", err);
         setError("Failed to fetch properties. Please try again later.");
+        toast({
+          title: "Error",
+          description: "Failed to fetch properties. Please try again later.",
+          variant: "destructive",
+        });
       } finally {
         setLoading(false);
       }
     };
 
     fetchProperties();
-  }, [filters]);
+  }, [filters, refreshTrigger, toast]);
 
   if (loading) {
     return (

@@ -1,4 +1,3 @@
-
 import { Booking, Property, PropertyType, User, UserRole } from "@/types";
 
 // Mock data
@@ -424,6 +423,12 @@ const properties: Property[] = [
   }
 ];
 
+// Booking messages templates
+const BOOKING_MESSAGES = {
+  CANCELLED: "Thank you for your interest in our property. Unfortunately, this property is currently not available for viewing at the requested time. We encourage you to browse our other excellent properties that might suit your needs. Our team is always ready to assist you in finding your ideal home.",
+  CONFIRMED: "Great news! Your viewing request has been confirmed. We look forward to showing you the property at the scheduled time. Please arrive on time and feel free to ask any questions during the viewing. We're excited to help you find your new home!"
+};
+
 // Adding at least 5 pending bookings
 const bookings: Booking[] = [
   {
@@ -497,13 +502,11 @@ const bookings: Booking[] = [
 export const api = {
   // Auth
   login: async (email: string, password: string): Promise<User | null> => {
-    // In a real app, this would validate credentials against a backend
     const user = users.find(u => u.email === email);
     return user || null;
   },
   
   register: async (name: string, email: string, password: string, role: UserRole, phone?: string): Promise<User> => {
-    // In a real app, this would create a new user in the database
     const newUser: User = {
       id: (users.length + 1).toString(),
       email,
@@ -616,12 +619,18 @@ export const api = {
     if (index === -1) return null;
     
     bookings[index].status = status;
+    
+    if (status === "cancelled") {
+      bookings[index].statusMessage = BOOKING_MESSAGES.CANCELLED;
+    } else if (status === "confirmed") {
+      bookings[index].statusMessage = BOOKING_MESSAGES.CONFIRMED;
+    }
+    
     return bookings[index];
   },
   
   // Payment
   initiatePayment: async (phone: string, amount: number, description: string): Promise<{ success: boolean; message: string }> => {
-    // In a real app, this would make a request to MPesa API
     return { 
       success: true, 
       message: `Payment request of KSH ${amount} sent to ${phone} for ${description}` 
