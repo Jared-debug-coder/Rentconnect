@@ -69,49 +69,49 @@ export function Footer() {
             <h3 className="text-lg font-medium mb-4">Resources</h3>
             <ul className="space-y-2">
               <li>
-                <a href="/resources/rental-guides" className="text-gray-400 hover:text-white transition-colors">
+                <Link to="/resources/rental-guides" className="text-gray-400 hover:text-white transition-colors">
                   Rental Guides
-                </a>
+                </Link>
                 <p className="text-xs text-gray-500 mt-1">
                   Comprehensive guides to help you navigate the rental process in Kenya.
                 </p>
               </li>
               <li>
-                <a href="/resources/market-reports" className="text-gray-400 hover:text-white transition-colors">
+                <Link to="/resources/rental-guides" className="text-gray-400 hover:text-white transition-colors">
                   Property Market Reports
-                </a>
+                </Link>
                 <p className="text-xs text-gray-500 mt-1">
                   Quarterly analysis of property trends and pricing across major Kenyan cities.
                 </p>
               </li>
               <li>
-                <a href="/resources/tenant-rights" className="text-gray-400 hover:text-white transition-colors">
+                <Link to="/resources/rental-guides" className="text-gray-400 hover:text-white transition-colors">
                   Tenant Rights
-                </a>
+                </Link>
                 <p className="text-xs text-gray-500 mt-1">
                   Learn about your legal rights and protections as a tenant in Kenya.
                 </p>
               </li>
               <li>
-                <a href="/resources/landlord-tips" className="text-gray-400 hover:text-white transition-colors">
+                <Link to="/resources/rental-guides" className="text-gray-400 hover:text-white transition-colors">
                   Landlord Tips
-                </a>
+                </Link>
                 <p className="text-xs text-gray-500 mt-1">
                   Best practices for property management and tenant relations.
                 </p>
               </li>
               <li>
-                <a href="/legal/privacy" className="text-gray-400 hover:text-white transition-colors">
+                <Link to="/resources/rental-guides" className="text-gray-400 hover:text-white transition-colors">
                   Privacy Policy
-                </a>
+                </Link>
                 <p className="text-xs text-gray-500 mt-1">
                   How we protect and handle your personal information.
                 </p>
               </li>
               <li>
-                <a href="/legal/terms" className="text-gray-400 hover:text-white transition-colors">
+                <Link to="/resources/rental-guides" className="text-gray-400 hover:text-white transition-colors">
                   Terms of Service
-                </a>
+                </Link>
                 <p className="text-xs text-gray-500 mt-1">
                   Rules and guidelines for using our platform.
                 </p>

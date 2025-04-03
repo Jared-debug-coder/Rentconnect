@@ -7,10 +7,6 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -232,7 +228,12 @@ const AddProperty = () => {
         description: `Please pay KSh 500 to Till Number: ${tillNumber}. System will automatically verify your payment.`,
       });
       
-      // Simulate payment verification
+      // Simulate payment verification and STK push
+      toast({
+        title: "STK Push Sent",
+        description: "Please check your phone and enter PIN to complete payment",
+      });
+      
       setTimeout(() => {
         setIsCheckingPayment(true);
         
@@ -244,6 +245,7 @@ const AddProperty = () => {
           
           setPaymentSuccess(true);
           setShowSuccessMessage(true);
+          setShowPaymentDialog(false); // Close the dialog
           
           toast({
             title: "Payment Confirmed!",
@@ -253,8 +255,13 @@ const AddProperty = () => {
           
           setIsPaymentProcessing(false);
           setIsCheckingPayment(false);
+          
+          // Automatically redirect to dashboard after short delay
+          setTimeout(() => {
+            navigate("/landlord/dashboard");
+          }, 3000);
         }, 3000);
-      }, 4000);
+      }, 2000);
     } catch (error) {
       console.error("Payment error:", error);
       toast({

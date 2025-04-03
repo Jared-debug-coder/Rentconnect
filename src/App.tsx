@@ -21,7 +21,6 @@ import TenantDashboard from "./pages/tenant/Dashboard";
 import NotFound from "./pages/NotFound";
 
 // Resource Pages
-import RentalGuides from "./pages/resources/RentalGuides";
 import ResourcePages from "./pages/resources/ResourcePages";
 
 const queryClient = new QueryClient();
@@ -43,7 +42,7 @@ const App = () => (
               <Route path="/how-it-works" element={<HowItWorks />} />
               <Route path="/contact" element={<Contact />} />
               
-              {/* Resource Pages */}
+              {/* Resource Pages - all categories now point to the same component */}
               <Route path="/resources/rental-guides" element={<ResourcePages />} />
               <Route path="/resources/:category" element={<ResourcePages />} />
               
@@ -53,6 +52,10 @@ const App = () => (
               
               {/* Tenant routes */}
               <Route path="/tenant/dashboard" element={<TenantDashboard />} />
+              
+              {/* Legal pages (currently redirecting to resources) */}
+              <Route path="/legal/privacy" element={<ResourcePages />} />
+              <Route path="/legal/terms" element={<ResourcePages />} />
               
               {/* Catch-all route */}
               <Route path="*" element={<NotFound />} />
