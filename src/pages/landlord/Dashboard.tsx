@@ -271,22 +271,28 @@ const LandlordDashboard = () => {
                 </CardContent>
               </Card>
               
-              <Card className="bg-white border-l-4 border-green-500">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Potential Revenue
-                  </CardTitle>
-                  <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
-                    <DollarSign className="h-4 w-4 text-green-500" />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">KSh {properties.reduce((sum, property) => sum + property.price, 0).toLocaleString()}</div>
-                  <p className="text-xs text-muted-foreground">
-                    Monthly total
-                  </p>
-                </CardContent>
-              </Card>
+                         <Card className="bg-white border-l-4 border-green-500">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Potential Revenue
+                </CardTitle>
+                <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
+                  <DollarSign className="h-4 w-4 text-green-500" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  KSh {properties.reduce((sum, property) => sum + property.price, 0).toLocaleString()}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Monthly total
+                </p>
+                <div className="text-sm text-gray-600 mt-2">
+                  <span className="font-medium">Potential Tax:</span>{" "}
+                  KSh {(properties.reduce((sum, property) => sum + property.price, 0) * 0.1).toLocaleString()}
+                </div>
+              </CardContent>
+            </Card>
               
               <Card className="bg-white border-l-4 border-purple-500">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

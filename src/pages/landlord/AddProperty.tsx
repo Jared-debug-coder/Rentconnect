@@ -88,6 +88,7 @@ const AddProperty = () => {
   const queryClient = useQueryClient();
   
   const [step, setStep] = useState(1);
+  const TILL_NUMBER = "283746";
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [propertyId, setPropertyId] = useState<string | null>(null);
@@ -223,7 +224,7 @@ const AddProperty = () => {
     setPaymentStage(1);
     
     try {
-      const tillNumber = "283746";
+      const tillNumber = TILL_NUMBER;
       
       toast({
         title: "Payment Instructions",
@@ -888,7 +889,7 @@ const AddProperty = () => {
                             </div>
                             <div className="flex justify-between">
                               <dt>Payment To:</dt>
-                              <dd className="font-medium">Till Number: 283746</dd>
+                              <dd className="font-medium">Till Number: {TILL_NUMBER}</dd>
                             </div>
                           </dl>
                         </div>

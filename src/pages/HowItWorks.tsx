@@ -266,7 +266,7 @@ const HowItWorks = () => {
               </Button>
             </Link>
             <Link to="/properties">
-              <Button size="lg" variant="outline" className="font-semibold border-white text-white hover:bg-brand-600">
+              <Button size="lg" variant="outline" className="font-semibold bg-white text-brand-500 hover:bg-gray-100">
                 Browse Properties
               </Button>
             </Link>

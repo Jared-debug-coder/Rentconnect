@@ -123,10 +123,10 @@ const Login = () => {
               <div className="mb-2">Demo accounts for testing:</div>
               <div className="flex justify-center gap-2">
                 <Button variant="outline" size="sm" onClick={fillDemoLandlord}>
-                  Landlord Demo
+                  Landlord 
                 </Button>
                 <Button variant="outline" size="sm" onClick={fillDemoTenant}>
-                  Tenant Demo
+                  Tenant 
                 </Button>
               </div>
             </div>

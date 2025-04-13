@@ -66,7 +66,7 @@ export default function Contact() {
                   <MapPin className="h-6 w-6 text-brand-500 mt-0.5" />
                   <div>
                     <h3 className="font-medium">Office Address</h3>
-                    <p className="text-gray-600">123 Main Street, Nairobi, Kenya</p>
+                    <p className="text-gray-600">123 Kamulu, Nairobi, Kenya</p>
                   </div>
                 </div>
                 
@@ -82,7 +82,7 @@ export default function Contact() {
                   <Mail className="h-6 w-6 text-brand-500 mt-0.5" />
                   <div>
                     <h3 className="font-medium">Email Address</h3>
-                    <p className="text-gray-600">info@rentconnect.co.ke</p>
+                    <p className="text-gray-600">rentconnect53@gmail.com</p>
                   </div>
                 </div>
               </div>

@@ -1,4 +1,3 @@
-
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { PropertySearch } from "@/components/PropertySearch";
@@ -45,14 +44,9 @@ const Index = () => {
             <div className="mt-8 flex flex-wrap justify-center gap-4">
               {!user ? (
                 <>
-                  <Link to="/register">
-                    <Button size="lg" className="font-semibold">
-                      Get Started
-                    </Button>
-                  </Link>
-                  <Link to="/how-it-works">
-                    <Button size="lg" variant="outline" className="font-semibold">
-                      How It Works
+                  <Link to="/affordable-housing">
+                    <Button size="lg" variant="secondary" className="font-semibold">
+                      Government Housing Initiative
                     </Button>
                   </Link>
                 </>
@@ -254,7 +248,7 @@ const Index = () => {
               </Button>
             </Link>
             <Link to="/properties">
-              <Button size="lg" variant="outline" className="font-semibold border-white text-white hover:bg-brand-600">
+              <Button size="lg" variant="outline" className="font-semibold bg-white text-brand-500 hover:bg-gray-100">
                 Browse Properties
               </Button>
             </Link>
