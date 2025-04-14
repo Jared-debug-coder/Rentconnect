@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://Jared-debug-coder.github.io/Rentconnect",
+  "homepage": "https://jared-debug-coder.github.io/Rentconnect",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

@@ -5,7 +5,7 @@ import { resolve } from 'path'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/Rentconnect/', // Base URL for GitHub Pages
+  base: '/Rentconnect/', // Base URL for GitHub Pages - note case sensitivity
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
