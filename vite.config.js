@@ -14,6 +14,7 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
+    copyPublicDir: true,
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
@@ -23,4 +24,5 @@ export default defineConfig({
       },
     },
   },
+  publicDir: 'public',
 })
