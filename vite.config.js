@@ -19,10 +19,12 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
       },
-      output: {
-        manualChunks: undefined,
-      },
     },
+    // Add explicit asset handling
+    assetsInlineLimit: 0,
+    manifest: true,
+    // Ensure proper path handling
+    cssCodeSplit: true,
   },
   publicDir: 'public',
 })
