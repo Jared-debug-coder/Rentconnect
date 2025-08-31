@@ -72,7 +72,7 @@ const Index = () => {
             </p>
           </div>
           
-          <PropertyList />
+          <PropertyList filters={{ limit: 6 }} />
           
           <div className="text-center mt-10">
             <Link to="/properties">

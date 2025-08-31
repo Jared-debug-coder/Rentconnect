@@ -525,29 +525,40 @@ export const api = {
     minPrice?: number; 
     maxPrice?: number;
     city?: string;
+    limit?: number;
   }): Promise<Property[]> => {
-    let filtered = [...properties];
-    
-    if (filters) {
-      if (filters.type) {
-        filtered = filtered.filter(p => p.type === filters.type);
-      }
-      
-      if (filters.minPrice) {
-        filtered = filtered.filter(p => p.price >= filters.minPrice);
-      }
-      
-      if (filters.maxPrice) {
-        filtered = filtered.filter(p => p.price <= filters.maxPrice);
-      }
-      
-      if (filters.city) {
-        filtered = filtered.filter(p => 
-          p.city.toLowerCase().includes(filters.city.toLowerCase()));
-      }
-    }
-    
-    return filtered;
+    return new Promise((resolve) => {
+      // Simulate network delay for more realistic behavior
+      setTimeout(() => {
+        let filtered = [...properties];
+        
+        if (filters) {
+          if (filters.type) {
+            filtered = filtered.filter(p => p.type === filters.type);
+          }
+          
+          if (filters.minPrice) {
+            filtered = filtered.filter(p => p.price >= filters.minPrice);
+          }
+          
+          if (filters.maxPrice) {
+            filtered = filtered.filter(p => p.price <= filters.maxPrice);
+          }
+          
+          if (filters.city) {
+            filtered = filtered.filter(p => 
+              p.city.toLowerCase().includes(filters.city.toLowerCase()));
+          }
+          
+          // Limit results for homepage to improve initial load
+          if (filters.limit) {
+            filtered = filtered.slice(0, filters.limit);
+          }
+        }
+        
+        resolve(filtered);
+      }, 200); // 200ms simulated delay
+    });
   },
   
   getPropertyById: async (id: string): Promise<Property | null> => {

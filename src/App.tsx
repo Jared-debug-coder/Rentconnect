@@ -6,25 +6,43 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HashRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LocationProvider } from "@/contexts/LocationContext";
+import { Suspense, lazy } from "react";
+import { Loader2 } from "lucide-react";
 
-// Pages
-import Index from "./pages/Index";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Properties from "./pages/Properties";
-import PropertyDetails from "./pages/PropertyDetails";
-import HowItWorks from "./pages/HowItWorks";
-import Contact from "./pages/Contact";
-import LandlordDashboard from "./pages/landlord/Dashboard";
-import AddProperty from "./pages/landlord/AddProperty";
-import TenantDashboard from "./pages/tenant/Dashboard";
-import NotFound from "./pages/NotFound";
-import AffordableHousing from "./pages/AffordableHousing";
+// Lazy load pages for better performance
+const Index = lazy(() => import("./pages/Index"));
+const Login = lazy(() => import("./pages/Login"));
+const Register = lazy(() => import("./pages/Register"));
+const Properties = lazy(() => import("./pages/Properties"));
+const PropertyDetails = lazy(() => import("./pages/PropertyDetails"));
+const HowItWorks = lazy(() => import("./pages/HowItWorks"));
+const Contact = lazy(() => import("./pages/Contact"));
+const LandlordDashboard = lazy(() => import("./pages/landlord/Dashboard"));
+const AddProperty = lazy(() => import("./pages/landlord/AddProperty"));
+const TenantDashboard = lazy(() => import("./pages/tenant/Dashboard"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const AffordableHousing = lazy(() => import("./pages/AffordableHousing"));
+const RentalGuides = lazy(() => import("./pages/resources/RentalGuides"));
 
-// Resource Pages
-import RentalGuides from "./pages/resources/RentalGuides"; // Import RentalGuides.tsx
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      cacheTime: 10 * 60 * 1000, // 10 minutes
+      retry: 1,
+    },
+  },
+});
 
-const queryClient = new QueryClient();
+// Loading component for Suspense fallback
+const LoadingSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="flex flex-col items-center gap-2">
+      <Loader2 className="h-8 w-8 animate-spin text-brand-500" />
+      <p className="text-sm text-gray-600">Loading...</p>
+    </div>
+  </div>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -34,7 +52,8 @@ const App = () => (
           <Toaster />
           <Sonner />
           <Router>
-            <Routes>
+            <Suspense fallback={<LoadingSpinner />}>
+              <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
@@ -56,7 +75,8 @@ const App = () => (
               
               {/* Catch-all route */}
               <Route path="*" element={<NotFound />} />
-            </Routes>
+              </Routes>
+            </Suspense>
           </Router>
         </TooltipProvider>
       </LocationProvider>

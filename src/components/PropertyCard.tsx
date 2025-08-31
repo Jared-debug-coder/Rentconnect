@@ -21,11 +21,16 @@ export function PropertyCard({ property }: PropertyCardProps) {
 
   return (
     <Card className="property-card h-full flex flex-col hover:shadow-lg transition-all duration-300">
-      <div className="relative h-60 overflow-hidden rounded-t-lg">
+      <div className="relative h-60 overflow-hidden rounded-t-lg bg-gray-200">
         <img
-          src={property.images[0] || "https://images.unsplash.com/photo-1568605114967-8130f3a36994"}
+          src={property.images[0] || "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400&h=300&fit=crop&crop=entropy&auto=format"}
           alt={property.title}
+          loading="lazy"
           className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = "/placeholder.svg";
+          }}
         />
         <Badge className="absolute top-2 right-2 bg-brand-500 font-medium text-white">
           KSh {property.price.toLocaleString()}/month
