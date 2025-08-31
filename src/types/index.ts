@@ -50,6 +50,7 @@ export interface PropertyFilters {
   minPrice?: number | null;
   maxPrice?: number | null;
   city?: string | null;
+  limit?: number | null;
 }
 
 export interface Booking {

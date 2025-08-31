@@ -28,7 +28,7 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  base: '/Rentconnect/',
+  base: mode === 'production' ? '/Rentconnect/' : '/',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
